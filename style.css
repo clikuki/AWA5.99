@@ -1,0 +1,22 @@
+*, *::before, *::after
+{
+    box-sizing: border-box;
+    background-color: #777;
+}
+
+body
+{
+    margin: 0;
+    padding: 1rem;
+}
+
+textarea
+{
+    color: white;
+    padding: 1rem;
+    width: 100%;
+    resize: none;
+    min-height: 20rem;
+    border: 2px solid white;
+    background-color: #0003;
+}
