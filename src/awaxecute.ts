@@ -416,6 +416,28 @@ const BubbleAbyss =
 
         if(next) next.prev = curr;
         return curr;
+    },
+    
+    surround(count: number): void
+    {
+        if(!this.top) return;
+
+        // Move to supposed root
+        let head = this.top;
+        while(head.prev && count-- > 0)
+        {
+            head = head.prev;
+        }
+
+        // Transplant
+        this.top = this.top.next =
+        {
+            type: "DOUBLE",
+            contents: head,
+            next: null,
+            prev: head.prev,
+        }
+        head.prev = null;
     }
 }
 
@@ -475,6 +497,7 @@ executeAwas(
                 break;
 
             case AWATISMS.SRN:
+                BubbleAbyss.surround(awaTokens[++i]);
                 break;
 
             case AWATISMS.MRG:
