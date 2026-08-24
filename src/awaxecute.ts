@@ -227,17 +227,17 @@ readNumberFromString(str: string): number
 type Bubble = SimpleBubble | doubleBubble;
 interface SimpleBubble
 {
-    next: Bubble | null;
-    prev: Bubble | null;
     type: "SIMPLE";
     value: number;
+    next: Bubble | null;
+    prev: Bubble | null;
 }
 interface doubleBubble
 {
+    type: "DOUBLE";
+    contents: Bubble | null;
     next: Bubble | null;
     prev: Bubble | null;
-    type: "DOUBLE";
-    contents: SimpleBubble;
 }
 
 const BubbleAbyss =
@@ -322,18 +322,7 @@ const BubbleAbyss =
         this.top = popped.prev;
         
         if(popped.type === "SIMPLE") return popped.value;
-        else if(subCommMode)
-        {
-            const values: number[] = [];
-            
-            let head: SimpleBubble | null = popped.contents;
-            while(head) {
-                values.push(head.value);
-                head = head.next as SimpleBubble;
-            }
-
-            return values;
-        }
+        else if(subCommMode) return this.recursivePopping(popped);
         else
         {
             if(this.top) this.top.next = popped.contents;
@@ -342,6 +331,21 @@ const BubbleAbyss =
             while(head) head = head.next;
             this.top = head;
         }
+    },
+
+    recursivePopping(bubble: Bubble, valueStore: number[] = []): number[]
+    {
+        if(bubble.type === "SIMPLE") valueStore.push(bubble.value);
+        else
+        {
+            let head: Bubble | null = bubble.contents;
+            while(head) {
+                this.recursivePopping(head, valueStore);
+                head = head.next as SimpleBubble;
+            }
+        }
+
+        return valueStore;
     },
 
     submerge(by: number): void
@@ -384,38 +388,34 @@ const BubbleAbyss =
         if(!this.top) return;
 
         if(this.top.type === "SIMPLE") this.blow(this.top.value);
-        else {
-            // Clone by traverse to top of original LL from root, while keeping ref to root of copy
-            let realHead: SimpleBubble | null = this.top.contents,
-                copyHead: SimpleBubble | null =
-                {
-                    type: "SIMPLE",
-                    value: realHead.value,
-                    next: null,
-                    prev: null,
-                },
-                copyRoot = copyHead;
-
-            while(realHead.next)
-            {
-                realHead = realHead.next as SimpleBubble;
-                copyHead = copyHead.next =
-                {
-                    type: "SIMPLE",
-                    value: realHead.value,
-                    next: null,
-                    prev: copyHead,
-                }
-            }
-
-            this.top = this.top.next =
+        else this.top = this.top.next =
             {
                 type: "DOUBLE",
-                contents: copyRoot,
+                contents: this.recursiveDuplication(this.top, true),
                 next: null,
                 prev: this.top,
             }
-        }
+    },
+
+    recursiveDuplication(bubble: Bubble | null, isRoot: boolean): Bubble | null
+    {
+        if(!bubble) return null;
+
+        const next = isRoot ? null : this.recursiveDuplication(bubble.next, false);
+        const curr: Bubble = bubble.type === "SIMPLE" ? {
+            type: "SIMPLE",
+            value: bubble.value,
+            next,
+            prev: null,
+        } : {
+            type: "DOUBLE",
+            contents: this.recursiveDuplication(bubble.contents, false),
+            next,
+            prev: null,
+        };
+
+        if(next) next.prev = curr;
+        return curr;
     }
 }
 
