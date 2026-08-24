@@ -23,72 +23,206 @@ const enum AWATISMS {
     TRM = 0b11111,
 }
 
-const AwaSCII_MAP = new Map([
-    [0x00, "A"],
-    [0x01, "W"],
-    [0x02, "a"],
-    [0x03, "w"],
-    [0x04, "J"],
-    [0x05, "E"],
-    [0x06, "L"],
-    [0x07, "Y"],
-    [0x08, "H"],
-    [0x09, "O"],
-    [0x0A, "S"],
-    [0x0B, "I"],
-    [0x0C, "U"],
-    [0x0D, "M"],
-    [0x0E, "j"],
-    [0x0F, "e"],
-    [0x10, "l"],
-    [0x11, "y"],
-    [0x12, "h"],
-    [0x13, "o"],
-    [0x14, "s"],
-    [0x15, "i"],
-    [0x16, "u"],
-    [0x17, "m"],
-    [0x18, "P"],
-    [0x19, "C"],
-    [0x1A, "N"],
-    [0x1B, "T"],
-    [0x1C, "p"],
-    [0x1D, "c"],
-    [0x1E, "n"],
-    [0x1F, "t"],
-    [0x20, "B"],
-    [0x21, "D"],
-    [0x22, "F"],
-    [0x23, "G"],
-    [0x24, "R"],
-    [0x25, "b"],
-    [0x26, "d"],
-    [0x27, "f"],
-    [0x28, "g"],
-    [0x29, "r"],
-    [0x2A, "0"],
-    [0x2B, "1"],
-    [0x2C, "2"],
-    [0x2D, "3"],
-    [0x2E, "4"],
-    [0x2F, "5"],
-    [0x30, "6"],
-    [0x31, "7"],
-    [0x32, "8"],
-    [0x33, "9"],
-    [0x34, " "],
-    [0x35, "."],
-    [0x36, ","],
-    [0x37, "!"],
-    [0x38, "'"],
-    [0x39, "("],
-    [0x3A, ")"],
-    [0x3B, "~"],
-    [0x3C, "_"],
-    [0x3D, "/"],
-    [0x3E, ";"],
-    [0x3F, "\n"],
-])
+const AwaSCII =
+{
+    codeToChar: new Map([
+        [0x00, "A"],
+        [0x01, "W"],
+        [0x02, "a"],
+        [0x03, "w"],
+        [0x04, "J"],
+        [0x05, "E"],
+        [0x06, "L"],
+        [0x07, "Y"],
+        [0x08, "H"],
+        [0x09, "O"],
+        [0x0A, "S"],
+        [0x0B, "I"],
+        [0x0C, "U"],
+        [0x0D, "M"],
+        [0x0E, "j"],
+        [0x0F, "e"],
+        [0x10, "l"],
+        [0x11, "y"],
+        [0x12, "h"],
+        [0x13, "o"],
+        [0x14, "s"],
+        [0x15, "i"],
+        [0x16, "u"],
+        [0x17, "m"],
+        [0x18, "P"],
+        [0x19, "C"],
+        [0x1A, "N"],
+        [0x1B, "T"],
+        [0x1C, "p"],
+        [0x1D, "c"],
+        [0x1E, "n"],
+        [0x1F, "t"],
+        [0x20, "B"],
+        [0x21, "D"],
+        [0x22, "F"],
+        [0x23, "G"],
+        [0x24, "R"],
+        [0x25, "b"],
+        [0x26, "d"],
+        [0x27, "f"],
+        [0x28, "g"],
+        [0x29, "r"],
+        [0x2A, "0"],
+        [0x2B, "1"],
+        [0x2C, "2"],
+        [0x2D, "3"],
+        [0x2E, "4"],
+        [0x2F, "5"],
+        [0x30, "6"],
+        [0x31, "7"],
+        [0x32, "8"],
+        [0x33, "9"],
+        [0x34, " "],
+        [0x35, "."],
+        [0x36, ","],
+        [0x37, "!"],
+        [0x38, "'"],
+        [0x39, "("],
+        [0x3A, ")"],
+        [0x3B, "~"],
+        [0x3C, "_"],
+        [0x3D, "/"],
+        [0x3E, ";"],
+        [0x3F, "\n"],
+    ]),
+    charToCode: new Map([
+        ["A", 0x00],
+        ["W", 0x01],
+        ["a", 0x02],
+        ["w", 0x03],
+        ["J", 0x04],
+        ["E", 0x05],
+        ["L", 0x06],
+        ["Y", 0x07],
+        ["H", 0x08],
+        ["O", 0x09],
+        ["S", 0x0A],
+        ["I", 0x0B],
+        ["U", 0x0C],
+        ["M", 0x0D],
+        ["j", 0x0E],
+        ["e", 0x0F],
+        ["l", 0x10],
+        ["y", 0x11],
+        ["h", 0x12],
+        ["o", 0x13],
+        ["s", 0x14],
+        ["i", 0x15],
+        ["u", 0x16],
+        ["m", 0x17],
+        ["P", 0x18],
+        ["C", 0x19],
+        ["N", 0x1A],
+        ["T", 0x1B],
+        ["p", 0x1C],
+        ["c", 0x1D],
+        ["n", 0x1E],
+        ["t", 0x1F],
+        ["B", 0x20],
+        ["D", 0x21],
+        ["F", 0x22],
+        ["G", 0x23],
+        ["R", 0x24],
+        ["b", 0x25],
+        ["d", 0x26],
+        ["f", 0x27],
+        ["g", 0x28],
+        ["r", 0x29],
+        ["0", 0x2A],
+        ["1", 0x2B],
+        ["2", 0x2C],
+        ["3", 0x2D],
+        ["4", 0x2E],
+        ["5", 0x2F],
+        ["6", 0x30],
+        ["7", 0x31],
+        ["8", 0x32],
+        ["9", 0x33],
+        [" ", 0x34],
+        [".", 0x35],
+        [",", 0x36],
+        ["!", 0x37],
+        ["'", 0x38],
+        ["(", 0x39],
+        [")", 0x3A],
+        ["~", 0x3B],
+        ["_", 0x3C],
+        ["/", 0x3D],
+        [";", 0x3E],
+        ["\n", 0x3F],
+    ]),
+}
+
+function
+convertStringToAwaSCIICodes(str: string): number[]
+{
+    const codes: number[] = [];
+
+    for(const char of str)
+    {
+        const code = AwaSCII.charToCode.get(char);
+        if(code === undefined) continue;
+        codes.push(code);
+    }
+
+    return codes;
+}
+
+function
+convertAwaSCIICodesToString(codes: number[]): string
+{
+    let output = "",
+        i = 0,
+        hasAdded = false,
+        code: number,
+        char: string | undefined;
+
+    for(; i < codes.length; i++)
+    {
+        code = codes[i];
+        char = AwaSCII.codeToChar.get(code);
+        if(char)
+        {
+            if(hasAdded) output += " ";
+            output += char;
+            hasAdded = true;
+        }
+    }
+
+    return output;
+}
+
+function
+readNumberFromString(str: string): number
+{
+    let isNegative = false,
+        numStr = "";
+
+    for(const char of str)
+    {
+        if(!isNegative && char === "-")
+        {
+            isNegative = true;
+            continue;
+        }
+        else if(/\d/.test(char))
+        {
+            numStr += char;
+            continue;
+        }
+
+        break;
+    }
+
+    if(numStr) return +numStr * (isNegative ? -1 : 1);
+    else return NaN;
+}
 
 type Bubble = SimpleBubble | doubleBubble;
 interface SimpleBubble
@@ -114,7 +248,8 @@ const BubbleAbyss =
     blow(value: number): void
     {
         if(!this.top)
-            this.root = this.top = {
+            this.root = this.top =
+            {
                 type: "SIMPLE",
                 value,
                 next: null,
@@ -122,14 +257,60 @@ const BubbleAbyss =
             }
         else
         {
-            const newTop: Bubble = {
+            this.top = this.top.next = 
+            {
                 type: "SIMPLE",
                 value,
                 next: null,
                 prev: this.top,
             }
+        }
+    },
 
-            this.top = this.top.next = newTop;
+    bigBlow(values: number[]): void
+    {
+        if(!values.length) return;
+
+        let head: Bubble =
+        {
+            type: "SIMPLE",
+            value: values.pop()!,
+            next: null,
+            prev: null,
+        }
+
+        while(values.length)
+        {
+            head =
+            {
+                type: "SIMPLE",
+                value: values.pop()!,
+                next: head,
+                prev: null,
+            }
+
+            head.next!.prev = head;
+        }
+
+        if(!this.top)
+        {
+            this.root = this.top =
+            {
+                type: "DOUBLE",
+                contents: head,
+                next: null,
+                prev: null,
+            }
+        }
+        else
+        {
+            this.top = this.top.next =
+            {
+                type: "DOUBLE",
+                contents: head,
+                next: null,
+                prev: this.top,
+            }
         }
     },
 
@@ -199,11 +380,14 @@ const BubbleAbyss =
     },
 }
 
-function
-executeAwas(awaTokens: number[]): string
+async function
+executeAwas(
+    awaTokens: number[],
+    getInput: (type: "STRING" | "NUMBER") => Promise<string>,
+    sendOutput: (awaOutput: string) => void,
+): Promise<void>
 {
-    let output = "",
-        i = 0;
+    let i = 0;
 
     for(; i < awaTokens.length; i++)
     {
@@ -215,46 +399,36 @@ executeAwas(awaTokens: number[]): string
 
             case AWATISMS.PRN: {
                 const bubbles = BubbleAbyss.pop(true);
-                if(typeof bubbles === "number") output += AwaSCII_MAP.get(bubbles) ?? "";
-                else if(bubbles)
-                {
-                    let hasAdded = false,
-                        i = 0,
-                        code: number,
-                        char: string | undefined;
+                if(typeof bubbles === "number") sendOutput(AwaSCII.codeToChar.get(bubbles) ?? "");
+                else if(bubbles) sendOutput(convertAwaSCIICodesToString(bubbles));
+                }break;
 
-                    for(; i < bubbles.length; i++)
-                    {
-                        code = bubbles[i];
-                        char = AwaSCII_MAP.get(code);
-                        if(char)
-                        {
-                            if(hasAdded) output += " ";
-                            output += char;
-                            hasAdded = true;
-                        }
-                    }
-                }}break;
-
-            case AWATISMS.PR1:
+            case AWATISMS.PR1: {
                 const bubbles = BubbleAbyss.pop(true);
-                if(typeof bubbles === "number") output += bubbles;
-                else if(bubbles) output += bubbles.join(" ");
-                break;
+                if(typeof bubbles === "number") sendOutput(bubbles.toString());
+                else if(bubbles) sendOutput(bubbles.join(" "));
+                }break;
 
-            case AWATISMS.RED:
-                break;
+            case AWATISMS.RED: {
+                const inputStr = await getInput("STRING");
+                BubbleAbyss.bigBlow(convertStringToAwaSCIICodes(inputStr));
+                }break;
 
-            case AWATISMS.R3D:
-                break;
+            case AWATISMS.R3D: {
+                const inputStr = await getInput("NUMBER");
+                BubbleAbyss.blow(readNumberFromString(inputStr));
+                }break;
 
             case AWATISMS.BLO:
+                BubbleAbyss.blow(awaTokens[++i]);
                 break;
 
             case AWATISMS.SBM:
+                BubbleAbyss.submerge(awaTokens[++i]);
                 break;
 
             case AWATISMS.POP:
+                BubbleAbyss.pop(false);
                 break;
 
             case AWATISMS.DPL:
@@ -301,6 +475,4 @@ executeAwas(awaTokens: number[]): string
 
         }
     }
-
-    return output;
 }
