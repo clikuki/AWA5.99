@@ -378,6 +378,45 @@ const BubbleAbyss =
             bubble.prev = prev;
         }
     },
+
+    duplicate(): void
+    {
+        if(!this.top) return;
+
+        if(this.top.type === "SIMPLE") this.blow(this.top.value);
+        else {
+            // Clone by traverse to top of original LL from root, while keeping ref to root of copy
+            let realHead: SimpleBubble | null = this.top.contents,
+                copyHead: SimpleBubble | null =
+                {
+                    type: "SIMPLE",
+                    value: realHead.value,
+                    next: null,
+                    prev: null,
+                },
+                copyRoot = copyHead;
+
+            while(realHead.next)
+            {
+                realHead = realHead.next as SimpleBubble;
+                copyHead = copyHead.next =
+                {
+                    type: "SIMPLE",
+                    value: realHead.value,
+                    next: null,
+                    prev: copyHead,
+                }
+            }
+
+            this.top = this.top.next =
+            {
+                type: "DOUBLE",
+                contents: copyRoot,
+                next: null,
+                prev: this.top,
+            }
+        }
+    }
 }
 
 async function
@@ -432,6 +471,7 @@ executeAwas(
                 break;
 
             case AWATISMS.DPL:
+                BubbleAbyss.duplicate();
                 break;
 
             case AWATISMS.SRN:
