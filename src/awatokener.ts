@@ -1,13 +1,15 @@
 const tokenizeAwas = (() => {
     const tokenParams = new Map([
-        [0x05, true],
-        [0x06, false],
-        [0x09, false],
-        [0x10, false],
+        // 0b01 to designate original 8-bit byte size based on AWA5.0 specs
+        // 0b10 to designate signed integer type
+        [0x05, 0b01],
+        [0x06, 0b10],
+        [0x09, 0b10],
+        [0x10, 0b10],
     ]);
 
     return function
-        (awaBools: boolean[]): number[]
+        (awaBools: boolean[], useEightSizedBytes: boolean): number[]
         {
             const awaTokens: number[] = [];
             let currToken = 0,
@@ -24,19 +26,20 @@ const tokenizeAwas = (() => {
                     {
                         currToken = ~(currToken & 0x7f) + 1;
                     }
-                    isSigned = false;
-
+                    
                     awaTokens.push(currToken);
 
-                    const signFlag = tokenParams.get(currToken);
-                    if(signFlag !== undefined)
+                    // Fix state
+                    isSigned = false;
+                    groupUntil = 5;
+
+                    const paramFlags = tokenParams.get(currToken);
+                    if(paramFlags !== undefined)
                     {
-                        groupUntil = 8;
-                        isSigned = signFlag;
-                    }
-                    else
-                    {
-                        groupUntil = 5;
+                        isSigned = Boolean(paramFlags & 0b01);
+
+                        const isEightSized = paramFlags & 0b01;
+                        if(isEightSized || useEightSizedBytes) groupUntil = 8;
                     }
                     
                     currToken = 0;

@@ -20,8 +20,10 @@ onOutput(newAwaOutput: string): void
 
 runScriptBtn.addEventListener("click", () =>
 {
+    awascriptOutput.textContent = "";
+
     const awascript = awascriptInput.value;
     const awaBools = parseAwas(awascript);
-    const awaTokens = tokenizeAwas(awaBools);
+    const awaTokens = tokenizeAwas(awaBools, false);
     executeAwas(awaTokens, getInput, onOutput);
 })
