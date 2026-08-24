@@ -245,6 +245,12 @@ const BubbleAbyss =
     root: null as Bubble | null,
     top: null as Bubble | null,
 
+    clear()
+    {
+        this.root = null;
+        this.top = null;
+    },
+
     blow(value: number): void
     {
         if(!this.top)
@@ -438,6 +444,27 @@ const BubbleAbyss =
             prev: head.prev,
         }
         head.prev = null;
+    },
+
+    add(): void
+    {
+        if(!this.top || !this.top.prev) return;
+
+        // TODO: support smpl/dbl and dbl/dbl add operations
+        let a = this.top, b = this.top.prev;
+
+        if(a.type === "SIMPLE" && b.type === "SIMPLE")
+        {
+            this.top =
+                {
+                    type: "SIMPLE",
+                    value: a.value + b.value,
+                    next: null,
+                    prev: b.prev   
+                }
+            
+            if(b.prev) b.prev.next = this.top
+        }
     }
 }
 
@@ -448,6 +475,7 @@ executeAwas(
     sendOutput: (awaOutput: string) => void,
 ): Promise<void>
 {
+    BubbleAbyss.clear();
     let i = 0;
 
     for(; i < awaTokens.length; i++)
@@ -504,6 +532,7 @@ executeAwas(
                 break;
 
             case AWATISMS.ADD:
+                BubbleAbyss.add();
                 break;
 
             case AWATISMS.SUB:
