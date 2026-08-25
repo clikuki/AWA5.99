@@ -484,7 +484,22 @@ const BubbleAbyss =
             if(b.prev) b.prev.next = this.top
             else this.root = this.top;
         }
-    }
+    },
+
+    countTopContaining(): number
+    {
+        if(!this.top || this.top.type === "SIMPLE") return 0;
+        
+        let head = this.top.contents,
+            cnt = 0;
+        while(head)
+        {
+            cnt++;
+            head = head.next;
+        }
+
+        return cnt;
+    },
 }
 
 async function
@@ -564,6 +579,7 @@ executeAwas(
                 break;
 
             case AWATISMS.CNT:
+                BubbleAbyss.blow(BubbleAbyss.countTopContaining());
                 break;
 
             case AWATISMS.LBL:
