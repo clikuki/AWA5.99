@@ -427,6 +427,19 @@ const BubbleAbyss =
     surround(count: number): void
     {
         if(!this.top) return;
+        
+        if(!count)
+        {
+            // Empty surround case
+            this.top = this.top.next =
+            {
+                type: "DOUBLE",
+                contents: null,
+                next: null,
+                prev: this.top,
+            }
+            return;
+        }
 
         // Move to supposed root
         let head = this.top;
@@ -434,16 +447,21 @@ const BubbleAbyss =
         {
             head = head.prev;
         }
-
-        // Transplant
-        this.top = this.top.next =
-        {
+        
+        // Transplant bubbles as double bubble content
+        this.top = {
             type: "DOUBLE",
             contents: head,
             next: null,
             prev: head.prev,
         }
-        head.prev = null;
+        
+        if(!head.prev) this.root = this.top;
+        else
+        {
+            head.prev.next = this.top;
+            head.prev = null;
+        }
     },
 
     add(): void
