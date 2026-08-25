@@ -464,6 +464,7 @@ const BubbleAbyss =
                 }
             
             if(b.prev) b.prev.next = this.top
+            else this.root = this.top;
         }
     }
 }
