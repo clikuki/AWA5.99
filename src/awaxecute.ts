@@ -436,7 +436,7 @@ const BubbleAbyss =
 
         // Move to supposed root
         let head = this.top;
-        while(head.prev && count-- > 0)
+        while(head.prev && --count > 0)
         {
             head = head.prev;
         }
@@ -512,8 +512,9 @@ const BubbleAbyss =
     {
         if(!this.top || !this.top.prev) return;
 
-        // TODO: support smpl/dbl and dbl/dbl add operations
-        let a = this.top, b = this.top.prev;
+        // TODO: support dbl/dbl add operations
+        const a = this.top, b = this.top.prev;
+        console.log(a,b);
 
         if(a.type === "SIMPLE" && b.type === "SIMPLE")
         {
@@ -527,6 +528,33 @@ const BubbleAbyss =
             
             if(b.prev) b.prev.next = this.top
             else this.root = this.top;
+        }
+        else if(a.type === "SIMPLE" && b.type === "DOUBLE")
+        {
+            this.recursiveAdd(b, a.value);
+            b.next = null;
+            this.top = b;
+        }
+        else if(a.type === "DOUBLE" && b.type === "SIMPLE")
+        {
+            this.recursiveAdd(a, b.value);
+            a.prev = b.prev;
+            if(b.prev) b.prev.next = a;
+            else this.root = a;
+        }
+    },
+
+    recursiveAdd(bubble: Bubble, value: number): void
+    {
+        if(bubble.type === "SIMPLE") bubble.value += value;
+        else
+        {
+            let head: Bubble | null = bubble.contents;
+            while(head)
+            {
+                this.recursiveAdd(head, value);
+                head = head.next;
+            }
         }
     },
 
@@ -553,6 +581,7 @@ executeAwas(
     sendOutput: (awaOutput: string) => void,
 ): Promise<void>
 {
+    console.log(awaTokens);
     BubbleAbyss.clear();
     let i = 0;
 
