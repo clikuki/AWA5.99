@@ -179,7 +179,6 @@ convertAwaSCIICodesToString(codes: number[]): string
 {
     let output = "",
         i = 0,
-        hasAdded = false,
         code: number,
         char: string | undefined;
 
@@ -187,12 +186,7 @@ convertAwaSCIICodesToString(codes: number[]): string
     {
         code = codes[i];
         char = AwaSCII.codeToChar.get(code);
-        if(char)
-        {
-            if(hasAdded) output += " ";
-            output += char;
-            hasAdded = true;
-        }
+        if(char) output += char;
     }
 
     return output;
@@ -328,7 +322,7 @@ const BubbleAbyss =
         this.top = popped.prev;
         
         if(popped.type === "SIMPLE") return popped.value;
-        else if(subCommMode) return this.recursivePopping(popped); // Remove double bubble and return content
+        else if(subCommMode) return this.recursivePopping(popped).reverse(); // Remove double bubble and return content
         else
         {
             // Release content from double as bubbles
@@ -395,13 +389,7 @@ const BubbleAbyss =
         if(!this.top) return;
 
         if(this.top.type === "SIMPLE") this.blow(this.top.value);
-        else this.top = this.top.next =
-            {
-                type: "DOUBLE",
-                contents: this.recursiveDuplication(this.top, true),
-                next: null,
-                prev: this.top,
-            }
+        else this.top = this.top.next = this.recursiveDuplication(this.top, true);
     },
 
     recursiveDuplication(bubble: Bubble | null, isRoot: boolean): Bubble | null
