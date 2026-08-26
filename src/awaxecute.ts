@@ -328,9 +328,10 @@ const BubbleAbyss =
         this.top = popped.prev;
         
         if(popped.type === "SIMPLE") return popped.value;
-        else if(subCommMode) return this.recursivePopping(popped);
+        else if(subCommMode) return this.recursivePopping(popped); // Remove double bubble and return content
         else
         {
+            // Release content from double as bubbles
             if(this.top) this.top.next = popped.contents;
 
             let head: Bubble | null = popped.contents;
@@ -464,6 +465,57 @@ const BubbleAbyss =
         }
     },
 
+    merge(): void
+    {
+        if(!this.top || !this.top.prev) return;
+
+        let a = this.top, b = this.top.prev;
+        
+        // Create and link double bubble
+        const bubble: doubleBubble =
+            {
+                type: "DOUBLE",
+                contents: null,
+                next: null,
+                prev: b.prev,
+            }
+
+        if(b.prev) b.prev.next = bubble;
+        this.top = bubble;
+            
+        // Connect contents of new double bubble
+        if(a.type === "SIMPLE") bubble.contents = a;
+        else bubble.contents = a.contents;
+
+        if(b.type === "SIMPLE")
+        {
+            if(bubble.contents)
+            {
+                b.next = bubble.contents;
+                bubble.contents.prev = b;
+            }
+
+            bubble.contents = b;
+        }
+        else if(b.contents)
+        {
+            if(bubble.contents)
+            {
+                // Connect head of b to tail of a
+                let head = b.contents;
+                while(head.next)
+                {
+                    head = head.next
+                }
+
+                head.next = bubble.contents;
+                bubble.contents.prev = head;
+            }
+
+            bubble.contents = b.contents;
+        }
+    },
+
     add(): void
     {
         if(!this.top || !this.top.prev) return;
@@ -563,6 +615,7 @@ executeAwas(
                 break;
 
             case AWATISMS.MRG:
+                BubbleAbyss.merge();
                 break;
 
             case AWATISMS.ADD:
