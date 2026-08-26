@@ -14,7 +14,8 @@ const tokenizeAwas = (() => {
             const awaTokens: number[] = [];
             let currToken = 0,
                 groupUntil = 5,
-                isSigned = false;
+                isSigned = false,
+                isParam = false;
             
             for(const bool of awaBools)
             {
@@ -33,15 +34,20 @@ const tokenizeAwas = (() => {
                     isSigned = false;
                     groupUntil = 5;
 
-                    const paramFlags = tokenParams.get(currToken);
-                    if(paramFlags !== undefined)
+                    if(isParam) isParam = false;
+                    else
                     {
-                        isSigned = Boolean(paramFlags & 0b01);
-
-                        const isEightSized = paramFlags & 0b01;
-                        if(isEightSized || useEightSizedBytes) groupUntil = 8;
+                        const paramFlags = tokenParams.get(currToken);
+                        if(paramFlags !== undefined)
+                        {
+                            isParam = true;
+                            isSigned = Boolean(paramFlags & 0b01);
+                            
+                            const isEightSized = paramFlags & 0b01;
+                            if(isEightSized || useEightSizedBytes) groupUntil = 8;
+                        }
                     }
-                    
+                            
                     currToken = 0;
                 }
             }
