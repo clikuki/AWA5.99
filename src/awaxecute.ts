@@ -389,7 +389,11 @@ const BubbleAbyss =
         if(!this.top) return;
 
         if(this.top.type === "SIMPLE") this.blow(this.top.value);
-        else this.top = this.top.next = this.recursiveDuplication(this.top, true);
+        else {
+            const copy = this.recursiveDuplication(this.top, true)!;
+            copy.prev = this.top;
+            this.top = this.top.next = copy;
+        }
     },
 
     recursiveDuplication(bubble: Bubble | null, isRoot: boolean): Bubble | null
