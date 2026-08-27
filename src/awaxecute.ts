@@ -707,7 +707,7 @@ executeAwas(
     BubbleAbyss.clear();
     let i = 0;
 
-    for(; i < awaTokens.length; i++)
+    runner: for(; i < awaTokens.length; i++)
     {
         const awaToken = awaTokens[i];
         switch(awaToken)
@@ -797,8 +797,7 @@ executeAwas(
                 break;
 
             case AWATISMS.TRM:
-                break;
-
+                break runner;
         }
     }
 }
