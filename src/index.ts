@@ -30,15 +30,15 @@ runScriptBtn.addEventListener("click", () =>
 })
 
 function debugBubblesPrint(): void
-{
+{   
     type NestedNumberArray = (NestedNumberArray | number)[];
 
     function getValues(bubble: Bubble | null): NestedNumberArray
     {
         if(!bubble) return []
-        if(bubble.type === "SIMPLE") return [bubble.value, ...getValues(bubble.next)];
-        return [getValues(bubble.contents), ...getValues(bubble.next)];
+        if(bubble.type === "SIMPLE") return [...getValues(bubble.prev), bubble.value];
+        return [...getValues(bubble.prev), getValues(bubble.contents)];
     }
 
-    console.log(getValues(BubbleAbyss.root));
+    console.log(getValues(BubbleAbyss.top));
 }

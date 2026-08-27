@@ -279,12 +279,12 @@ const BubbleAbyss =
             prev: null,
         }
 
-        while(values.length)
+        for(let i = 0; i < values.length; i++)
         {
             head =
             {
                 type: "SIMPLE",
-                value: values.pop()!,
+                value: values[i],
                 next: head,
                 prev: null,
             }
@@ -320,17 +320,27 @@ const BubbleAbyss =
 
         const popped = this.top;
         this.top = popped.prev;
+        if(popped.prev) popped.prev.next = null;
+        else this.root = null;
         
         if(popped.type === "SIMPLE") return popped.value;
-        else if(subCommMode) return this.recursivePopping(popped).reverse(); // Remove double bubble and return content
-        else
+        else if(subCommMode)
+        {
+            if(popped.contents) return this.recursivePopping(popped);
+            else return [];
+        }
+        else if(popped.contents)
         {
             // Release content from double as bubbles
-            if(this.top) this.top.next = popped.contents;
+            if(this.top)
+            {
+                let tail: Bubble | null = popped.contents;
+                while(tail.prev) tail = tail.prev;
 
-            let head: Bubble | null = popped.contents;
-            while(head) head = head.next;
-            this.top = head;
+                this.top.next = tail;
+            }
+            else this.root = popped.contents;
+            this.top = popped.contents;
         }
     },
 
@@ -342,7 +352,7 @@ const BubbleAbyss =
             let head: Bubble | null = bubble.contents;
             while(head) {
                 this.recursivePopping(head, valueStore);
-                head = head.next as SimpleBubble;
+                head = head.prev as SimpleBubble;
             }
         }
 
@@ -364,23 +374,23 @@ const BubbleAbyss =
         }
         else
         {
-            let next: Bubble | null = null,
-                prev: Bubble | null = bubble.prev;
+            let front: Bubble | null = null,
+                back: Bubble | null = bubble.prev;
 
-            while(by > 0 && prev)
+            while(by > 0 && back)
             {
-                next = prev;
-                prev = prev.prev;
+                front = back;
+                back = back.prev;
             }
 
             this.top = bubble.prev;
             bubble.prev.next = null;
 
-            if(next) next.prev = bubble;
-            if(prev) prev.next = bubble;
+            if(front) front.prev = bubble;
+            if(back) back.next = bubble;
 
-            bubble.next = next;
-            bubble.prev = prev;
+            bubble.next = front;
+            bubble.prev = back;
         }
     },
 
@@ -400,20 +410,20 @@ const BubbleAbyss =
     {
         if(!bubble) return null;
 
-        const next = isRoot ? null : this.recursiveDuplication(bubble.next, false);
+        const prev = isRoot ? null : this.recursiveDuplication(bubble.prev, false);
         const curr: Bubble = bubble.type === "SIMPLE" ? {
             type: "SIMPLE",
             value: bubble.value,
-            next,
-            prev: null,
+            next: null,
+            prev,
         } : {
             type: "DOUBLE",
             contents: this.recursiveDuplication(bubble.contents, false),
-            next,
-            prev: null,
+            next: null,
+            prev,
         };
 
-        if(next) next.prev = curr;
+        if(prev) prev.next = curr;
         return curr;
     },
     
@@ -435,25 +445,25 @@ const BubbleAbyss =
         }
 
         // Move to supposed root
-        let head = this.top;
-        while(head.prev && --count > 0)
+        let tail = this.top;
+        while(tail.prev && --count > 0)
         {
-            head = head.prev;
+            tail = tail.prev;
         }
         
         // Transplant bubbles as double bubble content
         this.top = {
             type: "DOUBLE",
-            contents: head,
+            contents: this.top,
             next: null,
-            prev: head.prev,
+            prev: tail.prev,
         }
         
-        if(!head.prev) this.root = this.top;
+        if(!tail.prev) this.root = this.top;
         else
         {
-            head.prev.next = this.top;
-            head.prev = null;
+            tail.prev.next = this.top;
+            tail.prev = null;
         }
     },
 
@@ -461,7 +471,7 @@ const BubbleAbyss =
     {
         if(!this.top || !this.top.prev) return;
 
-        let a = this.top, b = this.top.prev;
+        let front = this.top, back = this.top.prev;
         
         // Create and link double bubble
         const bubble: doubleBubble =
@@ -469,42 +479,40 @@ const BubbleAbyss =
                 type: "DOUBLE",
                 contents: null,
                 next: null,
-                prev: b.prev,
+                prev: back.prev,
             }
 
-        if(b.prev) b.prev.next = bubble;
+        if(back.prev) {
+            back.prev.next = bubble;
+            back.prev = null;
+        }
+        else this.root = bubble;
         this.top = bubble;
             
         // Connect contents of new double bubble
-        if(a.type === "SIMPLE") bubble.contents = a;
-        else bubble.contents = a.contents;
+        if(back.type === "SIMPLE") bubble.contents = back;
+        else bubble.contents = back.contents;
 
-        if(b.type === "SIMPLE")
+        if(front.type === "SIMPLE" || front.contents)
         {
             if(bubble.contents)
             {
-                b.next = bubble.contents;
-                bubble.contents.prev = b;
-            }
-
-            bubble.contents = b;
-        }
-        else if(b.contents)
-        {
-            if(bubble.contents)
-            {
-                // Connect head of b to tail of a
-                let head = b.contents;
-                while(head.next)
+                let frontTail = front;
+                if(front.type === "DOUBLE")
                 {
-                    head = head.next
+                    frontTail = front.contents!;
+                    while(frontTail.prev)
+                    {
+                        frontTail = frontTail.prev;
+                    }
                 }
 
-                head.next = bubble.contents;
-                bubble.contents.prev = head;
+                frontTail.prev = bubble.contents;
+                bubble.contents.next = frontTail;
             }
-
-            bubble.contents = b.contents;
+            
+            if(front.type === "SIMPLE") bubble.contents = front;
+            else bubble.contents = front.contents;
         }
     },
 
@@ -514,7 +522,6 @@ const BubbleAbyss =
 
         // TODO: support dbl/dbl add operations
         const a = this.top, b = this.top.prev;
-        console.log(a,b);
 
         if(a.type === "SIMPLE" && b.type === "SIMPLE")
         {
@@ -553,7 +560,7 @@ const BubbleAbyss =
             while(head)
             {
                 this.recursiveAdd(head, value);
-                head = head.next;
+                head = head.prev;
             }
         }
     },
@@ -567,7 +574,7 @@ const BubbleAbyss =
         while(head)
         {
             cnt++;
-            head = head.next;
+            head = head.prev;
         }
 
         return cnt;
