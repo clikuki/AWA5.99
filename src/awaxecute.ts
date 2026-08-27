@@ -554,6 +554,54 @@ const BubbleAbyss =
         this.top = sum;
     },
 
+    multiply(): void
+    {
+        if(!this.top || !this.top.prev) return;
+
+        const a = this.top,
+            b = this.top.prev,
+            sum = this.recursiveMaths(a, b, (n: number, m: number) => ({
+                type: "SIMPLE",
+                value: n * m,
+                next: null,
+                prev: null,
+            }));
+        
+        sum.prev = b.prev;
+        if(b.prev) b.prev.next = sum;
+        else this.root = sum;
+        this.top = sum;
+    },
+
+    divide(): void
+    {
+        if(!this.top || !this.top.prev) return;
+
+        const a = this.top,
+            b = this.top.prev,
+            sum = this.recursiveMaths(a, b, (n: number, m: number) => ({
+                type: "DOUBLE",
+                contents: {
+                    type: "SIMPLE",
+                    value: Math.floor(n / m),
+                    next: null,
+                    prev: {
+                        type: "SIMPLE",
+                        value: n % m,
+                        next: null,
+                        prev: null   
+                    }
+                },
+                next: null,
+                prev: null,
+            }));
+        
+        sum.prev = b.prev;
+        if(b.prev) b.prev.next = sum;
+        else this.root = sum;
+        this.top = sum;
+    },
+
     recursiveMaths(a: Bubble, b: Bubble, mathOp: (n: number, m: number) => Bubble): Bubble
     {
         // smpl/smpl : do maths
@@ -613,7 +661,7 @@ const BubbleAbyss =
                 const bubble = a.type === "DOUBLE" ?
                     this.recursiveMaths(head, smpl, mathOp) :
                     this.recursiveMaths(smpl, head, mathOp);
-                    
+
                 tmpTail.prev = bubble;
                 bubble.next = tmpTail;
                 tmpTail = bubble;
@@ -722,9 +770,11 @@ executeAwas(
                 break;
 
             case AWATISMS.MUL:
+                BubbleAbyss.multiply();
                 break;
 
             case AWATISMS.DIV:
+                BubbleAbyss.divide();
                 break;
 
             case AWATISMS.CNT:
