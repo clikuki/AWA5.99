@@ -535,6 +535,25 @@ const BubbleAbyss =
         this.top = sum;
     },
 
+    subtract(): void
+    {
+        if(!this.top || !this.top.prev) return;
+
+        const a = this.top,
+            b = this.top.prev,
+            sum = this.recursiveMaths(a, b, (n: number, m: number) => ({
+                type: "SIMPLE",
+                value: n - m,
+                next: null,
+                prev: null,
+            }));
+        
+        sum.prev = b.prev;
+        if(b.prev) b.prev.next = sum;
+        else this.root = sum;
+        this.top = sum;
+    },
+
     recursiveMaths(a: Bubble, b: Bubble, mathOp: (n: number, m: number) => Bubble): Bubble
     {
         // smpl/smpl : do maths
@@ -591,7 +610,10 @@ const BubbleAbyss =
 
             while(head)
             {
-                const bubble = this.recursiveMaths(head, smpl, mathOp);
+                const bubble = a.type === "DOUBLE" ?
+                    this.recursiveMaths(head, smpl, mathOp) :
+                    this.recursiveMaths(smpl, head, mathOp);
+                    
                 tmpTail.prev = bubble;
                 bubble.next = tmpTail;
                 tmpTail = bubble;
@@ -696,6 +718,7 @@ executeAwas(
                 break;
 
             case AWATISMS.SUB:
+                BubbleAbyss.subtract();
                 break;
 
             case AWATISMS.MUL:
