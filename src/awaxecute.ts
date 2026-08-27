@@ -520,49 +520,94 @@ const BubbleAbyss =
     {
         if(!this.top || !this.top.prev) return;
 
-        // TODO: support dbl/dbl add operations
-        const a = this.top, b = this.top.prev;
-
-        if(a.type === "SIMPLE" && b.type === "SIMPLE")
-        {
-            this.top =
-                {
-                    type: "SIMPLE",
-                    value: a.value + b.value,
-                    next: null,
-                    prev: b.prev   
-                }
-            
-            if(b.prev) b.prev.next = this.top
-            else this.root = this.top;
-        }
-        else if(a.type === "SIMPLE" && b.type === "DOUBLE")
-        {
-            this.recursiveAdd(b, a.value);
-            b.next = null;
-            this.top = b;
-        }
-        else if(a.type === "DOUBLE" && b.type === "SIMPLE")
-        {
-            this.recursiveAdd(a, b.value);
-            a.prev = b.prev;
-            if(b.prev) b.prev.next = a;
-            else this.root = a;
-        }
+        const a = this.top,
+            b = this.top.prev,
+            sum = this.recursiveMaths(a, b, (n: number, m: number) => ({
+                type: "SIMPLE",
+                value: n + m,
+                next: null,
+                prev: null,
+            }));
+        
+        sum.prev = b.prev;
+        if(b.prev) b.prev.next = sum;
+        else this.root = sum;
+        this.top = sum;
     },
 
-    recursiveAdd(bubble: Bubble, value: number): void
+    recursiveMaths(a: Bubble, b: Bubble, mathOp: (n: number, m: number) => Bubble): Bubble
     {
-        if(bubble.type === "SIMPLE") bubble.value += value;
-        else
+        // smpl/smpl : do maths
+        // dbl/dbl : zip through both abysses
+        // smpl/dbl and dbl/smpl : apply smpl to dbl
+
+        if(a.type === "SIMPLE" && b.type === "SIMPLE") return mathOp(a.value, b.value);
+
+        if(a.type === "DOUBLE" && b.type === "DOUBLE")
         {
-            let head: Bubble | null = bubble.contents;
-            while(head)
+            let headA = a.contents,
+                headB = b.contents,
+                tmpHead: Bubble = {
+                    type: "SIMPLE",
+                    value: 0,
+                    next: null,
+                    prev: null,
+                },
+                tmpTail: Bubble = tmpHead;
+
+            debugger;
+            while(headA && headB)
             {
-                this.recursiveAdd(head, value);
-                head = head.prev;
+                const bubble = this.recursiveMaths(headA, headB, mathOp);
+                tmpTail.prev = bubble;
+                bubble.next = tmpTail;
+                tmpTail = bubble;
+
+                headA = headA.prev;
+                headB = headB.prev;
+            }
+
+            return {
+                type: "DOUBLE",
+                contents: tmpHead.prev,
+                next: null,
+                prev: null,
             }
         }
+
+        if(a.type === "DOUBLE" || b.type === "DOUBLE")
+        {
+            const smpl = a.type === "SIMPLE" ? a : b,
+                dbl = a.type === "DOUBLE" ? a : b;
+
+            let head = (dbl as doubleBubble).contents,
+                tmpHead: Bubble = {
+                    type: "SIMPLE",
+                    value: 0,
+                    next: null,
+                    prev: null,
+                },
+                tmpTail: Bubble = tmpHead;
+
+            while(head)
+            {
+                const bubble = this.recursiveMaths(head, smpl, mathOp);
+                tmpTail.prev = bubble;
+                bubble.next = tmpTail;
+                tmpTail = bubble;
+
+                head = head.prev;
+            }
+
+            return {
+                type: "DOUBLE",
+                contents: tmpHead.prev,
+                next: null,
+                prev: null,
+            }
+        }
+        
+        throw new Error("IMPOSSIBLE BUBBLE TYPES AWAWAWAWA");
     },
 
     countTopContaining(): number
