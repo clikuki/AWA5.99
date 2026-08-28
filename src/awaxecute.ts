@@ -694,6 +694,33 @@ const BubbleAbyss =
 
         return cnt;
     },
+
+    isEqual(): boolean
+    {
+        const a = this.top;
+        if(!a || a.type === "DOUBLE" || !a.prev) return false;
+        const b = a.prev;
+        if(b.type === "DOUBLE") return false;
+        return a.value === b.value;
+    },
+
+    isLessThan(): boolean
+    {
+        const a = this.top;
+        if(!a || a.type === "DOUBLE" || !a.prev) return false;
+        const b = a.prev;
+        if(b.type === "DOUBLE") return false;
+        return a.value < b.value;
+    },
+
+    isGreaterThan(): boolean
+    {
+        const a = this.top;
+        if(!a || a.type === "DOUBLE" || !a.prev) return false;
+        const b = a.prev;
+        if(b.type === "DOUBLE") return false;
+        return a.value > b.value;
+    },
 }
 
 async function
@@ -706,15 +733,24 @@ executeAwas(
     console.log(awaTokens);
     BubbleAbyss.clear();
 
+    const paramedAwatisms = [
+        AWATISMS.BLO,
+        AWATISMS.SBM,
+        AWATISMS.SRN,
+        AWATISMS.JMP,
+        AWATISMS.LBL,
+    ];
+
     // parse labels ahead of time
     const labelIndices = new Map<number, number>();
-    let i = 0;
-    for(; i < awaTokens.length; i++)
+    let i = 0, time = 0;
+    while(i < awaTokens.length)
     {
-        const token = awaTokens[i];
-        if([AWATISMS.BLO, AWATISMS.SBM, AWATISMS.SRN, AWATISMS.JMP].includes(token)) i++;
+        const token = awaTokens[i++];
+        if(paramedAwatisms.includes(token)) i++;
         if(token !== AWATISMS.LBL) continue;
-        labelIndices.set(token, awaTokens[++i]);
+        const labelIndex = awaTokens[i - 1];
+        labelIndices.set(labelIndex, i);
     }
 
     // start execution
@@ -802,12 +838,14 @@ executeAwas(
                 break;
 
             case AWATISMS.EQL:
-                break;
-
             case AWATISMS.LSS:
-                break;
-
             case AWATISMS.GR8:
+                if(awaToken === AWATISMS.EQL && BubbleAbyss.isEqual()) break;
+                if(awaToken === AWATISMS.LSS && BubbleAbyss.isLessThan()) break;
+                if(awaToken === AWATISMS.GR8 && BubbleAbyss.isGreaterThan()) break;
+                
+                // Skip to next next token if next token takes param
+                if(paramedAwatisms.includes(awaTokens[i++])) i++;
                 break;
 
             case AWATISMS.TRM:
