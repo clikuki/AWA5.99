@@ -705,11 +705,23 @@ executeAwas(
 {
     console.log(awaTokens);
     BubbleAbyss.clear();
-    let i = 0;
 
-    runner: for(; i < awaTokens.length; i++)
+    // parse labels ahead of time
+    const labelIndices = new Map<number, number>();
+    let i = 0;
+    for(; i < awaTokens.length; i++)
     {
-        const awaToken = awaTokens[i];
+        const token = awaTokens[i];
+        if([AWATISMS.BLO, AWATISMS.SBM, AWATISMS.SRN, AWATISMS.JMP].includes(token)) i++;
+        if(token !== AWATISMS.LBL) continue;
+        labelIndices.set(token, awaTokens[++i]);
+    }
+
+    // start execution
+    i = 0;
+    runner: while(i < awaTokens.length)
+    {
+        const awaToken = awaTokens[i++];
         switch(awaToken)
         {
             case AWATISMS.NOP: // NO-OP
@@ -738,11 +750,11 @@ executeAwas(
                 }break;
 
             case AWATISMS.BLO:
-                BubbleAbyss.blow(awaTokens[++i]);
+                BubbleAbyss.blow(awaTokens[i++]);
                 break;
 
             case AWATISMS.SBM:
-                BubbleAbyss.submerge(awaTokens[++i]);
+                BubbleAbyss.submerge(awaTokens[i++]);
                 break;
 
             case AWATISMS.POP:
@@ -754,7 +766,7 @@ executeAwas(
                 break;
 
             case AWATISMS.SRN:
-                BubbleAbyss.surround(awaTokens[++i]);
+                BubbleAbyss.surround(awaTokens[i++]);
                 break;
 
             case AWATISMS.MRG:
@@ -782,9 +794,11 @@ executeAwas(
                 break;
 
             case AWATISMS.LBL:
+                i++; // skip param token
                 break;
 
-            case AWATISMS.JMP:
+            case AWATISMS.JMP: 
+                i = labelIndices.get(awaTokens[i]) ?? (i + 1);
                 break;
 
             case AWATISMS.EQL:
