@@ -735,8 +735,8 @@ executeAwas(
 
             case AWATISMS.PR1: {
                 const bubbles = BubbleAbyss.pop(true);
-                if(typeof bubbles === "number") sendOutput(bubbles.toString());
-                else if(bubbles) sendOutput(bubbles.join(" "));
+                if(typeof bubbles === "number") sendOutput(bubbles.toString() + " ");
+                else if(bubbles) sendOutput(bubbles.join(" ") + " ");
                 }break;
 
             case AWATISMS.RED: {
