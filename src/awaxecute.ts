@@ -757,6 +757,8 @@ executeAwas(
     i = 0;
     runner: while(i < awaTokens.length)
     {
+        time++;
+
         const awaToken = awaTokens[i++];
         switch(awaToken)
         {
@@ -833,7 +835,7 @@ executeAwas(
                 i++; // skip param token
                 break;
 
-            case AWATISMS.JMP: 
+            case AWATISMS.JMP:
                 i = labelIndices.get(awaTokens[i]) ?? (i + 1);
                 break;
 
@@ -852,4 +854,6 @@ executeAwas(
                 break runner;
         }
     }
+
+    console.log("TIME: ", time);
 }
