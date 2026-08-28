@@ -6,6 +6,7 @@ const tokenizeAwas = (() => {
         [0x06, 0b10],
         [0x09, 0b10],
         [0x10, 0b10],
+        [0x11, 0b10],
     ]);
 
     return function
@@ -25,7 +26,9 @@ const tokenizeAwas = (() => {
                 {
                     if(isSigned && currToken & 0x80)
                     {
-                        currToken = ~(currToken & 0x7f) + 1;
+                        // Undo the negative sign in 8-bit form through two's complement,
+                        // then convert into javascript negative
+                        currToken = -((~currToken & 0x7f) + 1);
                     }
                     
                     awaTokens.push(currToken);
