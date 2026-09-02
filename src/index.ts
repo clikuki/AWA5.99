@@ -1,53 +1,69 @@
-const awaInput = document.getElementById("awascript") as HTMLTextAreaElement;
-const awaOutput = document.getElementById("awaout") as HTMLParagraphElement;
-const runScriptBtn = document.getElementById("run") as HTMLButtonElement;
-const stepScriptBtn = document.getElementById("step") as HTMLButtonElement;
-
-function
-onInput(type: "NUMBER" | "STRING"): Promise<string>
+function main(): void
 {
-    return new Promise<string>((res) =>
+    const awatalkInput = document.getElementById("awascript") as HTMLTextAreaElement;
+    const awaOutputEl = document.getElementById("awaout") as HTMLParagraphElement;
+    const runScriptBtn = document.getElementById("run") as HTMLButtonElement;
+    const stepScriptBtn = document.getElementById("step") as HTMLButtonElement;
+    
+    // I/O METHODS
+    function
+    onInput(type: "NUMBER" | "STRING"): Promise<string>
     {
-        // yeah prompt is blocking, but just following style here
-        res(prompt(`SUPPLY ${type} AS INPUT`) ?? "");
-    })
-}
+        return new Promise<string>((res) =>
+        {
+            // yeah prompt is blocking, but just following style here
+            res(prompt(`SUPPLY ${type} AS INPUT`) ?? "");
+        })
+    }
 
-function
-onOutput(out: string): void
-{
-    awaOutput.textContent += out;
-}
+    function
+    onOutput(out: string): void
+    {
+        awaOutputEl.textContent += out;
+    }
 
-function
-clearOutput(): void
-{
-    awaOutput.textContent = "";
-}
-
-runScriptBtn.addEventListener("click", () =>
-{
-    clearOutput();
-
+    function
+    clearOutput(): void
+    {
+        awaOutputEl.textContent = "";
+    }
+    
+    // AWAXECUTION
     const awaInterpreter = new AwaInterpreter;
     awaInterpreter.UseInputCallback(onInput);
     awaInterpreter.UseOutputCallback(onOutput);
-    awaInterpreter.UseAwatalk(awaInput.value);
-    awaInterpreter.run();
 
-    // debugBubblesPrint();
-})
+    let isUsingFreshAwatalk = false;
 
-// function debugBubblesPrint(): void
-// {   
-//     type NestedNumberArray = (NestedNumberArray | number)[];
+    // EVENT LISTENERS
+    runScriptBtn.addEventListener("click", () =>
+    {
+        if(!isUsingFreshAwatalk)
+        {
+            clearOutput();
+            awaInterpreter.UseAwatalk(awatalkInput.value);
+            isUsingFreshAwatalk = true;
+        }
 
-//     function getValues(bubble: Bubble | null): NestedNumberArray
-//     {
-//         if(!bubble) return []
-//         if(bubble.type === "SIMPLE") return [...getValues(bubble.prev), bubble.value];
-//         return [...getValues(bubble.prev), getValues(bubble.contents)];
-//     }
+        awaInterpreter.run();
+        awaInterpreter.DEBUG_PrettyPrintBubbles();
+    })
+    
+    stepScriptBtn.addEventListener("click", () =>
+    {
+        if(!isUsingFreshAwatalk)
+        {
+            clearOutput();
+            awaInterpreter.UseAwatalk(awatalkInput.value);
+            isUsingFreshAwatalk = true;
+        }
 
-//     console.log(getValues(BubbleAbyss.top));
-// }
+        awaInterpreter.step();
+        awaInterpreter.DEBUG_PrettyPrintBubbles();
+    })
+
+    // Invalidate stored awatalk
+    awatalkInput.addEventListener("input", () => isUsingFreshAwatalk = false);
+}
+
+main();
