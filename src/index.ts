@@ -1,9 +1,10 @@
 const awaInput = document.getElementById("awascript") as HTMLTextAreaElement;
 const awaOutput = document.getElementById("awaout") as HTMLParagraphElement;
 const runScriptBtn = document.getElementById("run") as HTMLButtonElement;
+const stepScriptBtn = document.getElementById("step") as HTMLButtonElement;
 
 function
-getInput(type: "NUMBER" | "STRING"): Promise<string>
+onInput(type: "NUMBER" | "STRING"): Promise<string>
 {
     return new Promise<string>((res) =>
     {
@@ -15,30 +16,38 @@ getInput(type: "NUMBER" | "STRING"): Promise<string>
 function
 onOutput(out: string): void
 {
-    awascriptOutput.textContent += out;
+    awaOutput.textContent += out;
+}
+
+function
+clearOutput(): void
+{
+    awaOutput.textContent = "";
 }
 
 runScriptBtn.addEventListener("click", () =>
 {
-    awascriptOutput.textContent = "";
+    clearOutput();
 
-    const awatalk = awascriptInput.value;
-    const awabits = parseAwas(awatalk);
-    const awatokens = tokenizeAwas(awabits, false);
-    executeAwas(awatokens, getInput, onOutput);
-    debugBubblesPrint();
+    const awaInterpreter = new AwaInterpreter;
+    awaInterpreter.UseInputCallback(onInput);
+    awaInterpreter.UseOutputCallback(onOutput);
+    awaInterpreter.UseAwatalk(awaInput.value);
+    awaInterpreter.run();
+
+    // debugBubblesPrint();
 })
 
-function debugBubblesPrint(): void
-{   
-    type NestedNumberArray = (NestedNumberArray | number)[];
+// function debugBubblesPrint(): void
+// {   
+//     type NestedNumberArray = (NestedNumberArray | number)[];
 
-    function getValues(bubble: Bubble | null): NestedNumberArray
-    {
-        if(!bubble) return []
-        if(bubble.type === "SIMPLE") return [...getValues(bubble.prev), bubble.value];
-        return [...getValues(bubble.prev), getValues(bubble.contents)];
-    }
+//     function getValues(bubble: Bubble | null): NestedNumberArray
+//     {
+//         if(!bubble) return []
+//         if(bubble.type === "SIMPLE") return [...getValues(bubble.prev), bubble.value];
+//         return [...getValues(bubble.prev), getValues(bubble.contents)];
+//     }
 
-    console.log(getValues(BubbleAbyss.top));
-}
+//     console.log(getValues(BubbleAbyss.top));
+// }

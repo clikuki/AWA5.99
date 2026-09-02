@@ -23,6 +23,14 @@ const enum AWATISMS {
     TRM = 0b11111,
 }
 
+const paramedAwatisms = [
+    AWATISMS.BLO,
+    AWATISMS.SBM,
+    AWATISMS.SRN,
+    AWATISMS.JMP,
+    AWATISMS.LBL,
+];
+
 const AwaSCII =
 {
     codeToChar: new Map([
@@ -234,16 +242,16 @@ interface doubleBubble
     prev: Bubble | null;
 }
 
-const BubbleAbyss =
+class BubbleAbyss
 {
-    root: null as Bubble | null,
-    top: null as Bubble | null,
+    root: Bubble | null = null;
+    top: Bubble | null = null;
 
     clear()
     {
         this.root = null;
         this.top = null;
-    },
+    }
 
     blow(value: number): void
     {
@@ -265,7 +273,7 @@ const BubbleAbyss =
                 prev: this.top,
             }
         }
-    },
+    }
 
     bigBlow(values: number[]): void
     {
@@ -312,7 +320,7 @@ const BubbleAbyss =
                 prev: this.top,
             }
         }
-    },
+    }
 
     pop(subCommMode: boolean): number | number[] | void
     {
@@ -342,7 +350,7 @@ const BubbleAbyss =
             else this.root = popped.contents;
             this.top = popped.contents;
         }
-    },
+    }
 
     recursivePopping(bubble: Bubble, valueStore: number[] = []): number[]
     {
@@ -357,7 +365,7 @@ const BubbleAbyss =
         }
 
         return valueStore;
-    },
+    }
 
     submerge(by: number): void
     {
@@ -392,7 +400,7 @@ const BubbleAbyss =
             bubble.next = front;
             bubble.prev = back;
         }
-    },
+    }
 
     duplicate(): void
     {
@@ -404,7 +412,7 @@ const BubbleAbyss =
             copy.prev = this.top;
             this.top = this.top.next = copy;
         }
-    },
+    }
 
     recursiveDuplication(bubble: Bubble | null, isRoot: boolean): Bubble | null
     {
@@ -425,7 +433,7 @@ const BubbleAbyss =
 
         if(prev) prev.next = curr;
         return curr;
-    },
+    }
     
     surround(count: number): void
     {
@@ -465,7 +473,7 @@ const BubbleAbyss =
             tail.prev.next = this.top;
             tail.prev = null;
         }
-    },
+    }
 
     merge(): void
     {
@@ -514,7 +522,7 @@ const BubbleAbyss =
             if(front.type === "SIMPLE") bubble.contents = front;
             else bubble.contents = front.contents;
         }
-    },
+    }
 
     add(): void
     {
@@ -533,7 +541,7 @@ const BubbleAbyss =
         if(b.prev) b.prev.next = sum;
         else this.root = sum;
         this.top = sum;
-    },
+    }
 
     subtract(): void
     {
@@ -552,7 +560,7 @@ const BubbleAbyss =
         if(b.prev) b.prev.next = sum;
         else this.root = sum;
         this.top = sum;
-    },
+    }
 
     multiply(): void
     {
@@ -571,7 +579,7 @@ const BubbleAbyss =
         if(b.prev) b.prev.next = sum;
         else this.root = sum;
         this.top = sum;
-    },
+    }
 
     divide(): void
     {
@@ -600,7 +608,7 @@ const BubbleAbyss =
         if(b.prev) b.prev.next = sum;
         else this.root = sum;
         this.top = sum;
-    },
+    }
 
     recursiveMaths(a: Bubble, b: Bubble, mathOp: (n: number, m: number) => Bubble): Bubble
     {
@@ -678,7 +686,7 @@ const BubbleAbyss =
         }
         
         throw new Error("IMPOSSIBLE BUBBLE TYPES AWAWAWAWA");
-    },
+    }
 
     countTopContaining(): number
     {
@@ -693,7 +701,7 @@ const BubbleAbyss =
         }
 
         return cnt;
-    },
+    }
 
     isEqual(): boolean
     {
@@ -702,7 +710,7 @@ const BubbleAbyss =
         const b = a.prev;
         if(b.type === "DOUBLE") return false;
         return a.value === b.value;
-    },
+    }
 
     isLessThan(): boolean
     {
@@ -711,7 +719,7 @@ const BubbleAbyss =
         const b = a.prev;
         if(b.type === "DOUBLE") return false;
         return a.value < b.value;
-    },
+    }
 
     isGreaterThan(): boolean
     {
@@ -720,140 +728,168 @@ const BubbleAbyss =
         const b = a.prev;
         if(b.type === "DOUBLE") return false;
         return a.value > b.value;
-    },
+    }
 }
 
-async function
-executeAwas(
-    awaTokens: number[],
-    getInput: (type: "STRING" | "NUMBER") => Promise<string>,
-    sendOutput: (awaOutput: string) => void,
-): Promise<void>
+type InputCallback = (type: "STRING" | "NUMBER") => Promise<string>;
+type OutputCallback = (awaOutput: string) => void;
+class AwaInterpreter
 {
-    console.log(awaTokens);
-    BubbleAbyss.clear();
+    #awatokens: number[] = [];
+    #awaindex = 0;
+    #executionTime = 0;
 
-    const paramedAwatisms = [
-        AWATISMS.BLO,
-        AWATISMS.SBM,
-        AWATISMS.SRN,
-        AWATISMS.JMP,
-        AWATISMS.LBL,
-    ];
+    #getInput: InputCallback | null = null;
+    #sendOutput: OutputCallback | null = null;
 
-    // parse labels ahead of time
-    const labelIndices = new Map<number, number>();
-    let i = 0, time = 0;
-    while(i < awaTokens.length)
+    #labelIndices = new Map<number, number>();
+    #bubbleAbyss = new BubbleAbyss;
+
+    public UseAwatalk(awatalk: string): void
     {
-        const token = awaTokens[i++];
-        if(paramedAwatisms.includes(token)) i++;
-        if(token !== AWATISMS.LBL) continue;
-        const labelIndex = awaTokens[i - 1];
-        labelIndices.set(labelIndex, i);
+        const awabits = parseAwas(awatalk);
+        this.#awatokens = tokenizeAwas(awabits, false);
+        this.StoreLabelIndices()
     }
 
-    // start execution
-    i = 0;
-    runner: while(i < awaTokens.length)
+    public UseInputCallback(cb: InputCallback): void
     {
-        time++;
+        this.#getInput = cb;
+    }
 
-        const awaToken = awaTokens[i++];
+    public UseOutputCallback(cb: OutputCallback): void
+    {
+        this.#sendOutput = cb;
+    }
+
+    public async step(): Promise<void>
+    {
+        this.#executionTime++;
+
+        const bubbleAbyss = this.#bubbleAbyss,
+            awatokens = this.#awatokens,
+            awaToken = awatokens[this.#awaindex++];
+
         switch(awaToken)
         {
             case AWATISMS.NOP: // NO-OP
                 break;
 
             case AWATISMS.PRN: {
-                const bubbles = BubbleAbyss.pop(true);
-                if(typeof bubbles === "number") sendOutput(AwaSCII.codeToChar.get(bubbles) ?? "");
-                else if(bubbles) sendOutput(convertAwaSCIICodesToString(bubbles));
+                const bubbles = bubbleAbyss.pop(true);
+                if(typeof bubbles === "number") this.#sendOutput?.(AwaSCII.codeToChar.get(bubbles) ?? "");
+                else if(bubbles) this.#sendOutput?.(convertAwaSCIICodesToString(bubbles));
                 }break;
 
             case AWATISMS.PR1: {
-                const bubbles = BubbleAbyss.pop(true);
-                if(typeof bubbles === "number") sendOutput(bubbles.toString() + " ");
-                else if(bubbles) sendOutput(bubbles.join(" ") + " ");
+                const bubbles = bubbleAbyss.pop(true);
+                if(typeof bubbles === "number") this.#sendOutput?.(bubbles.toString() + " ");
+                else if(bubbles) this.#sendOutput?.(bubbles.join(" ") + " ");
                 }break;
 
-            case AWATISMS.RED: {
-                const inputStr = await getInput("STRING");
-                BubbleAbyss.bigBlow(convertStringToAwaSCIICodes(inputStr));
-                }break;
+            case AWATISMS.RED:
+                this.#getInput?.("STRING").then(inputStr => {
+                    bubbleAbyss.bigBlow(convertStringToAwaSCIICodes(inputStr));
+                })
+                break;
 
-            case AWATISMS.R3D: {
-                const inputStr = await getInput("NUMBER");
-                BubbleAbyss.blow(readNumberFromString(inputStr));
-                }break;
+            case AWATISMS.R3D:
+                this.#getInput?.("STRING").then(inputStr => {
+                    bubbleAbyss.blow(readNumberFromString(inputStr));
+                })
+                break;
 
             case AWATISMS.BLO:
-                BubbleAbyss.blow(awaTokens[i++]);
+                bubbleAbyss.blow(awatokens[this.#awaindex++]);
                 break;
 
             case AWATISMS.SBM:
-                BubbleAbyss.submerge(awaTokens[i++]);
+                bubbleAbyss.submerge(awatokens[this.#awaindex++]);
                 break;
 
             case AWATISMS.POP:
-                BubbleAbyss.pop(false);
+                bubbleAbyss.pop(false);
                 break;
 
             case AWATISMS.DPL:
-                BubbleAbyss.duplicate();
+                bubbleAbyss.duplicate();
                 break;
 
             case AWATISMS.SRN:
-                BubbleAbyss.surround(awaTokens[i++]);
+                bubbleAbyss.surround(awatokens[this.#awaindex++]);
                 break;
 
             case AWATISMS.MRG:
-                BubbleAbyss.merge();
+                bubbleAbyss.merge();
                 break;
 
             case AWATISMS.ADD:
-                BubbleAbyss.add();
+                bubbleAbyss.add();
                 break;
 
             case AWATISMS.SUB:
-                BubbleAbyss.subtract();
+                bubbleAbyss.subtract();
                 break;
 
             case AWATISMS.MUL:
-                BubbleAbyss.multiply();
+                bubbleAbyss.multiply();
                 break;
 
             case AWATISMS.DIV:
-                BubbleAbyss.divide();
+                bubbleAbyss.divide();
                 break;
 
             case AWATISMS.CNT:
-                BubbleAbyss.blow(BubbleAbyss.countTopContaining());
+                bubbleAbyss.blow(bubbleAbyss.countTopContaining());
                 break;
 
             case AWATISMS.LBL:
-                i++; // skip param token
+                this.#awaindex++; // skip param token
                 break;
 
             case AWATISMS.JMP:
-                i = labelIndices.get(awaTokens[i]) ?? (i + 1);
+                this.#awaindex = this.#labelIndices.get(awatokens[this.#awaindex]) ?? (this.#awaindex + 1);
                 break;
 
             case AWATISMS.EQL:
             case AWATISMS.LSS:
             case AWATISMS.GR8:
-                if(awaToken === AWATISMS.EQL && BubbleAbyss.isEqual()) break;
-                if(awaToken === AWATISMS.LSS && BubbleAbyss.isLessThan()) break;
-                if(awaToken === AWATISMS.GR8 && BubbleAbyss.isGreaterThan()) break;
+                if(awaToken === AWATISMS.EQL && bubbleAbyss.isEqual()) break;
+                if(awaToken === AWATISMS.LSS && bubbleAbyss.isLessThan()) break;
+                if(awaToken === AWATISMS.GR8 && bubbleAbyss.isGreaterThan()) break;
                 
                 // Skip to next next token if next token takes param
-                if(paramedAwatisms.includes(awaTokens[i++])) i++;
+                if(paramedAwatisms.includes(awatokens[this.#awaindex++])) this.#awaindex++;
                 break;
 
             case AWATISMS.TRM:
-                break runner;
+                this.#awaindex = awatokens.length;
+                break;
         }
     }
 
-    console.log("TIME: ", time);
+    public run(): void
+    {
+        while(this.#awaindex < this.#awatokens.length)
+        {
+            this.step();
+        }
+    }
+
+    private StoreLabelIndices(): void
+    {
+        this.#labelIndices.clear();
+
+        const awatokens = this.#awatokens;
+        let i = 0;
+
+        while(i < awatokens.length)
+        {
+            const token = awatokens[i++];
+            if(paramedAwatisms.includes(token)) i++;
+            if(token !== AWATISMS.LBL) continue;
+            const labelIndex = awatokens[i - 1];
+            this.#labelIndices.set(labelIndex, i);
+        }
+    }
 }
