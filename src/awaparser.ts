@@ -1,5 +1,5 @@
 function
-parseAwas(awaStr: string): boolean[]
+parseAwas(awatalk: string): boolean[]
 {
     const bitArray: boolean[] = [];
     const matchAgainst = "AWA";
@@ -10,9 +10,9 @@ parseAwas(awaStr: string): boolean[]
         i = 0,
         char: string;
 
-    for(; i < awaStr.length; i++)
+    for(; i < awatalk.length; i++)
     {
-        char = awaStr[i].toUpperCase();
+        char = awatalk[i].toUpperCase();
 
         if(char === " ")
         {

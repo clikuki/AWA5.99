@@ -10,17 +10,17 @@ const tokenizeAwas = (() => {
     ]);
 
     return function
-        (awaBools: boolean[], useEightSizedBytes: boolean): number[]
+        (awabits: boolean[], useEightSizedBytes: boolean): number[]
         {
-            const awaTokens: number[] = [];
+            const awatokens: number[] = [];
             let currToken = 0,
                 groupUntil = 5,
                 isSigned = false,
                 isParam = false;
             
-            for(const bool of awaBools)
+            for(const bit of awabits)
             {
-                currToken = (currToken << 1) | (bool ? 1 : 0);
+                currToken = (currToken << 1) | (bit ? 1 : 0);
 
                 if(--groupUntil <= 0)
                 {
@@ -31,7 +31,7 @@ const tokenizeAwas = (() => {
                         currToken = -((~currToken & 0x7f) + 1);
                     }
                     
-                    awaTokens.push(currToken);
+                    awatokens.push(currToken);
 
                     // Fix state
                     isSigned = false;
@@ -55,6 +55,6 @@ const tokenizeAwas = (() => {
                 }
             }
 
-            return awaTokens;
+            return awatokens;
         }
 })()

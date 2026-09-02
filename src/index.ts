@@ -1,5 +1,5 @@
-const awascriptInput = document.getElementById("awascript") as HTMLTextAreaElement;
-const awascriptOutput = document.getElementById("awaout") as HTMLParagraphElement;
+const awaInput = document.getElementById("awascript") as HTMLTextAreaElement;
+const awaOutput = document.getElementById("awaout") as HTMLParagraphElement;
 const runScriptBtn = document.getElementById("run") as HTMLButtonElement;
 
 function
@@ -13,19 +13,19 @@ getInput(type: "NUMBER" | "STRING"): Promise<string>
 }
 
 function
-onOutput(newAwaOutput: string): void
+onOutput(out: string): void
 {
-    awascriptOutput.textContent += newAwaOutput;
+    awascriptOutput.textContent += out;
 }
 
 runScriptBtn.addEventListener("click", () =>
 {
     awascriptOutput.textContent = "";
 
-    const awascript = awascriptInput.value;
-    const awaBools = parseAwas(awascript);
-    const awaTokens = tokenizeAwas(awaBools, false);
-    executeAwas(awaTokens, getInput, onOutput);
+    const awatalk = awascriptInput.value;
+    const awabits = parseAwas(awatalk);
+    const awatokens = tokenizeAwas(awabits, false);
+    executeAwas(awatokens, getInput, onOutput);
     debugBubblesPrint();
 })
 
