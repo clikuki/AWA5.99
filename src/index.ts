@@ -4,9 +4,9 @@ function main(): void
     const awaOutputEl = document.querySelector("#awaout") as HTMLTextAreaElement;
     const runScriptBtn = document.querySelector(".run") as HTMLButtonElement;
     const stepScriptBtn = document.querySelector(".step") as HTMLButtonElement;
-    const tokenCountEl = document.querySelector(".tokenCount") as HTMLSpanElement;
     const executionTimeEl = document.querySelector(".executionTime") as HTMLSpanElement;
     const commandsListEl = document.querySelector(".commands") as HTMLOListElement;
+    const bubbleAbyssDisplayEl = document.querySelector(".bubble-abyss") as HTMLOListElement;
     
     // I/O METHODS
     function
@@ -41,7 +41,6 @@ function main(): void
     function
     updateStats(): void
     {
-        tokenCountEl.textContent = String(awaInterpreter.awatokens.length);
         executionTimeEl.textContent = String(awaInterpreter.executionTime);
     }
 
@@ -69,6 +68,35 @@ function main(): void
     }
 
     function
+    updateBubbleAbyssDisplay(
+        bubbles = awaInterpreter.getBubblesList(),
+        container = bubbleAbyssDisplayEl
+    ): void
+    {
+        const elements: HTMLElement[] = [];
+
+        for(const bubble of bubbles)
+        {
+            const bubbleEl = document.createElement("li");
+
+            if(typeof bubble === "number")
+            {
+                bubbleEl.textContent = String(bubble);
+            }
+            else
+            {
+                const dblBubbleEl = document.createElement("ol");
+                updateBubbleAbyssDisplay(bubble, dblBubbleEl);
+                bubbleEl.appendChild(dblBubbleEl);
+            }
+
+            elements.push(bubbleEl);
+        }
+
+        container.replaceChildren(...elements);
+    }
+
+    function
     preExecutionSteps(): void
     {
         if(isUsingLatestAwatalk) return;
@@ -84,16 +112,16 @@ function main(): void
     {
         preExecutionSteps();
         awaInterpreter.run();
-        awaInterpreter.DEBUG_PrettyPrintBubbles();
         updateStats();
+        updateBubbleAbyssDisplay();
     })
     
     stepScriptBtn.addEventListener("click", () =>
     {
         preExecutionSteps();
         awaInterpreter.step();
-        awaInterpreter.DEBUG_PrettyPrintBubbles();
         updateStats();
+        updateBubbleAbyssDisplay();
     })
 
     // Invalidate stored awatalk

@@ -267,6 +267,8 @@ interface doubleBubble
     prev: Bubble | null;
 }
 
+type NestedNumberArray = (NestedNumberArray | number)[];
+
 class BubbleAbyss
 {
     root: Bubble | null = null;
@@ -754,6 +756,13 @@ class BubbleAbyss
         if(b.type === "DOUBLE") return false;
         return a.value > b.value;
     }
+    
+    convertToNestedLists(bubble: Bubble | null = this.top): NestedNumberArray
+    {
+        if(!bubble) return []
+        if(bubble.type === "SIMPLE") return [...this.convertToNestedLists(bubble.prev), bubble.value];
+        return [...this.convertToNestedLists(bubble.prev), this.convertToNestedLists(bubble.contents)];
+    }
 }
 
 type InputCallback = (type: "STRING" | "NUMBER") => Promise<string>;
@@ -922,17 +931,8 @@ class AwaInterpreter
         }
     }
 
-    public DEBUG_PrettyPrintBubbles(): void
-    {   
-        type NestedNumberArray = (NestedNumberArray | number)[];
-
-        function getValues(bubble: Bubble | null): NestedNumberArray
-        {
-            if(!bubble) return []
-            if(bubble.type === "SIMPLE") return [...getValues(bubble.prev), bubble.value];
-            return [...getValues(bubble.prev), getValues(bubble.contents)];
-        }
-
-        console.log(getValues(this.#bubbleAbyss.top));
+    public getBubblesList(): NestedNumberArray
+    {
+        return this.#bubbleAbyss.convertToNestedLists();
     }
 }
