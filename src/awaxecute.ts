@@ -1,26 +1,51 @@
 const enum AWATISMS {
-    NOP = 0b00000,
-    PRN = 0b00001,
-    PR1 = 0b00010,
-    RED = 0b00011,
-    R3D = 0b00100,
-    BLO = 0b00101,
-    SBM = 0b00110,
-    POP = 0b00111,
-    DPL = 0b01000,
-    SRN = 0b01001,
-    MRG = 0b01010,
-    ADD = 0b01011, // i cant do 4dd as a name :(
-    SUB = 0b01100,
-    MUL = 0b01101,
-    DIV = 0b01110,
-    CNT = 0b01111,
-    LBL = 0b10000,
-    JMP = 0b10001,
-    EQL = 0b10010,
-    LSS = 0b10011,
-    GR8 = 0b10100,
-    TRM = 0b11111,
+    "NOP" = 0b00000,
+    "PRN" = 0b00001,
+    "PR1" = 0b00010,
+    "RED" = 0b00011,
+    "R3D" = 0b00100,
+    "BLO" = 0b00101,
+    "SBM" = 0b00110,
+    "POP" = 0b00111,
+    "DPL" = 0b01000,
+    "SRN" = 0b01001,
+    "MRG" = 0b01010,
+    "4DD" = 0b01011,
+    "SUB" = 0b01100,
+    "MUL" = 0b01101,
+    "DIV" = 0b01110,
+    "CNT" = 0b01111,
+    "LBL" = 0b10000,
+    "JMP" = 0b10001,
+    "EQL" = 0b10010,
+    "LSS" = 0b10011,
+    "GR8" = 0b10100,
+    "TRM" = 0b11111,
+}
+
+const AWATISM_CODE_COMMANDS: Record<number, string> = {
+    0b00000: "NOP",
+    0b00001: "PRN",
+    0b00010: "PR1",
+    0b00011: "RED",
+    0b00100: "R3D",
+    0b00101: "BLO",
+    0b00110: "SBM",
+    0b00111: "POP",
+    0b01000: "DPL",
+    0b01001: "SRN",
+    0b01010: "MRG",
+    0b01011: "4DD",
+    0b01100: "SUB",
+    0b01101: "MUL",
+    0b01110: "DIV",
+    0b01111: "CNT",
+    0b10000: "LBL",
+    0b10001: "JMP",
+    0b10010: "EQL",
+    0b10011: "LSS",
+    0b10100: "GR8",
+    0b11111: "TRM",
 }
 
 const paramedAwatisms = [
@@ -776,97 +801,97 @@ class AwaInterpreter
 
         switch(awaToken)
         {
-            case AWATISMS.NOP: // NO-OP
+            case AWATISMS["NOP"]: // NO-OP
                 break;
 
-            case AWATISMS.PRN: {
+            case AWATISMS["PRN"]: {
                 const bubbles = bubbleAbyss.pop(true);
                 if(typeof bubbles === "number") this.#sendOutput?.(AwaSCII.codeToChar.get(bubbles) ?? "");
                 else if(bubbles) this.#sendOutput?.(convertAwaSCIICodesToString(bubbles));
                 }break;
 
-            case AWATISMS.PR1: {
+            case AWATISMS["PR1"]: {
                 const bubbles = bubbleAbyss.pop(true);
                 if(typeof bubbles === "number") this.#sendOutput?.(bubbles.toString() + " ");
                 else if(bubbles) this.#sendOutput?.(bubbles.join(" ") + " ");
                 }break;
 
-            case AWATISMS.RED:
+            case AWATISMS["RED"]:
                 this.#getInput?.("STRING").then(inputStr => {
                     bubbleAbyss.bigBlow(convertStringToAwaSCIICodes(inputStr));
                 })
                 break;
 
-            case AWATISMS.R3D:
+            case AWATISMS["R3D"]:
                 this.#getInput?.("STRING").then(inputStr => {
                     bubbleAbyss.blow(readNumberFromString(inputStr));
                 })
                 break;
 
-            case AWATISMS.BLO:
+            case AWATISMS["BLO"]:
                 bubbleAbyss.blow(awatokens[this.#awaindex++]);
                 break;
 
-            case AWATISMS.SBM:
+            case AWATISMS["SBM"]:
                 bubbleAbyss.submerge(awatokens[this.#awaindex++]);
                 break;
 
-            case AWATISMS.POP:
+            case AWATISMS["POP"]:
                 bubbleAbyss.pop(false);
                 break;
 
-            case AWATISMS.DPL:
+            case AWATISMS["DPL"]:
                 bubbleAbyss.duplicate();
                 break;
 
-            case AWATISMS.SRN:
+            case AWATISMS["SRN"]:
                 bubbleAbyss.surround(awatokens[this.#awaindex++]);
                 break;
 
-            case AWATISMS.MRG:
+            case AWATISMS["MRG"]:
                 bubbleAbyss.merge();
                 break;
 
-            case AWATISMS.ADD:
+            case AWATISMS["4DD"]:
                 bubbleAbyss.add();
                 break;
 
-            case AWATISMS.SUB:
+            case AWATISMS["SUB"]:
                 bubbleAbyss.subtract();
                 break;
 
-            case AWATISMS.MUL:
+            case AWATISMS["MUL"]:
                 bubbleAbyss.multiply();
                 break;
 
-            case AWATISMS.DIV:
+            case AWATISMS["DIV"]:
                 bubbleAbyss.divide();
                 break;
 
-            case AWATISMS.CNT:
+            case AWATISMS["CNT"]:
                 bubbleAbyss.blow(bubbleAbyss.countTopContaining());
                 break;
 
-            case AWATISMS.LBL:
+            case AWATISMS["LBL"]:
                 this.#awaindex++; // skip param token
                 break;
 
-            case AWATISMS.JMP:
+            case AWATISMS["JMP"]:
                 this.#awaindex = this.#labelIndices.get(awatokens[this.#awaindex]) ?? (this.#awaindex + 1);
                 break;
 
-            case AWATISMS.EQL:
-            case AWATISMS.LSS:
-            case AWATISMS.GR8:
-                if(awaToken === AWATISMS.EQL && bubbleAbyss.isEqual()) break;
-                if(awaToken === AWATISMS.LSS && bubbleAbyss.isLessThan()) break;
-                if(awaToken === AWATISMS.GR8 && bubbleAbyss.isGreaterThan()) break;
+            case AWATISMS["EQL"]:
+            case AWATISMS["LSS"]:
+            case AWATISMS["GR8"]:
+                if(awaToken === AWATISMS["EQL"] && bubbleAbyss.isEqual()) break;
+                if(awaToken === AWATISMS["LSS"] && bubbleAbyss.isLessThan()) break;
+                if(awaToken === AWATISMS["GR8"] && bubbleAbyss.isGreaterThan()) break;
                 
                 // Skip to next next token if next token takes param
                 if(paramedAwatisms.includes(awatokens[this.#awaindex++])) this.#awaindex++;
                 break;
 
-            case AWATISMS.TRM:
+            case AWATISMS["TRM"]:
                 this.#awaindex = awatokens.length;
                 break;
         }

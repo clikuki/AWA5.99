@@ -6,6 +6,7 @@ function main(): void
     const stepScriptBtn = document.querySelector(".step") as HTMLButtonElement;
     const tokenCountEl = document.querySelector(".tokenCount") as HTMLSpanElement;
     const executionTimeEl = document.querySelector(".executionTime") as HTMLSpanElement;
+    const commandsListEl = document.querySelector(".commands") as HTMLOListElement;
     
     // I/O METHODS
     function
@@ -45,6 +46,29 @@ function main(): void
     }
 
     function
+    updateCommandsList(): void
+    {
+        const newCommands: HTMLLIElement[] = [],
+            awatokens = awaInterpreter.awatokens;
+        for(let i = 0; i < awatokens.length; i++)
+        {
+            const token = awatokens[i];
+            let content = AWATISM_CODE_COMMANDS[token];
+
+            if(paramedAwatisms.includes(token)) {
+                if(i >= awatokens.length - 1) content += " ?";
+                else content += " " + awatokens[++i];
+            }
+
+            const cmdEl = document.createElement("li");
+            cmdEl.textContent = content;
+            newCommands.push(cmdEl);
+        }
+
+        commandsListEl.replaceChildren(...newCommands);
+    }
+
+    function
     preExecutionSteps(): void
     {
         if(isUsingLatestAwatalk) return;
@@ -52,6 +76,7 @@ function main(): void
 
         clearOutput();
         awaInterpreter.UseAwatalk(awatalkInput.value);
+        updateCommandsList();
     }
 
     // EVENT LISTENERS
