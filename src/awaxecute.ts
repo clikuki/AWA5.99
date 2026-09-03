@@ -802,6 +802,8 @@ class AwaInterpreter
 
     public async step(): Promise<void>
     {
+        if(this.#awaindex >= this.#awatokens.length) return;
+
         this.#executionTime++;
 
         const bubbleAbyss = this.#bubbleAbyss,
