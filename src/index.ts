@@ -4,6 +4,8 @@ function main(): void
     const awaOutputEl = document.querySelector("#awaout") as HTMLTextAreaElement;
     const runScriptBtn = document.querySelector(".run") as HTMLButtonElement;
     const stepScriptBtn = document.querySelector(".step") as HTMLButtonElement;
+    const tokenCountEl = document.querySelector(".tokenCount") as HTMLSpanElement;
+    const executionTimeEl = document.querySelector(".executionTime") as HTMLSpanElement;
     
     // I/O METHODS
     function
@@ -33,37 +35,44 @@ function main(): void
     awaInterpreter.UseInputCallback(onInput);
     awaInterpreter.UseOutputCallback(onOutput);
 
-    let isUsingFreshAwatalk = false;
+    let isUsingLatestAwatalk = false;
+
+    function
+    updateStats(): void
+    {
+        tokenCountEl.textContent = String(awaInterpreter.awatokens.length);
+        executionTimeEl.textContent = String(awaInterpreter.executionTime);
+    }
+
+    function
+    preExecutionSteps(): void
+    {
+        if(isUsingLatestAwatalk) return;
+        isUsingLatestAwatalk = true;
+
+        clearOutput();
+        awaInterpreter.UseAwatalk(awatalkInput.value);
+    }
 
     // EVENT LISTENERS
     runScriptBtn.addEventListener("click", () =>
     {
-        if(!isUsingFreshAwatalk)
-        {
-            clearOutput();
-            awaInterpreter.UseAwatalk(awatalkInput.value);
-            isUsingFreshAwatalk = true;
-        }
-
+        preExecutionSteps();
         awaInterpreter.run();
         awaInterpreter.DEBUG_PrettyPrintBubbles();
+        updateStats();
     })
     
     stepScriptBtn.addEventListener("click", () =>
     {
-        if(!isUsingFreshAwatalk)
-        {
-            clearOutput();
-            awaInterpreter.UseAwatalk(awatalkInput.value);
-            isUsingFreshAwatalk = true;
-        }
-
+        preExecutionSteps();
         awaInterpreter.step();
         awaInterpreter.DEBUG_PrettyPrintBubbles();
+        updateStats();
     })
 
     // Invalidate stored awatalk
-    awatalkInput.addEventListener("input", () => isUsingFreshAwatalk = false);
+    awatalkInput.addEventListener("input", () => isUsingLatestAwatalk = false);
 
     // Init
     clearOutput();

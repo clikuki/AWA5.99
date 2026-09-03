@@ -18,14 +18,25 @@
 
 		<div class="wrapper">
 			<textarea id="awaout" disabled></textarea>
-			<label for="awaout">Output</label>
+			<label for="awaout">Awautput</label>
 		</div>
+	</main>
 
-		<div class="controls-container">
+	<aside>
+		<div class="controls">
 			<button class="run">Run</button>
 			<button class="step">Step</button>
 		</div>
-	</main>
+		
+		<ul class="stats">
+			<li>Tokens: <span class="tokenCount">0</span></li>
+			<li>Time: <span class="executionTime">0</span></li>
+		</ul>
+
+		<ol class="commands">
+
+		</ol>
+	</aside>
 
 	<script src="/build/awaparser.js"></script>
 	<script src="/build/awatokener.js"></script>
