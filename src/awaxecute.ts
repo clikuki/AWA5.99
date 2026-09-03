@@ -782,9 +782,14 @@ class AwaInterpreter
     get awaindex(): number { return this.#awaindex; }
     get awatokens(): readonly number[] { return this.#awatokens }
     get executionTime(): number { return this.#executionTime; }
+    get hasFinished(): boolean { return this.#awaindex >= this.#awatokens.length };
 
     public UseAwatalk(awatalk: string): void
     {
+        this.#awaindex = 0;
+        this.#executionTime = 0;
+        this.#bubbleAbyss.clear();
+
         const awabits = parseAwas(awatalk);
         this.#awatokens = tokenizeAwas(awabits, false);
         this.StoreLabelIndices()
@@ -828,13 +833,13 @@ class AwaInterpreter
                 }break;
 
             case AWATISMS["RED"]:
-                this.#getInput?.("STRING").then(inputStr => {
+                await this.#getInput?.("STRING").then(inputStr => {
                     bubbleAbyss.bigBlow(convertStringToAwaSCIICodes(inputStr));
                 })
                 break;
 
             case AWATISMS["R3D"]:
-                this.#getInput?.("STRING").then(inputStr => {
+                await this.#getInput?.("NUMBER").then(inputStr => {
                     bubbleAbyss.blow(readNumberFromString(inputStr));
                 })
                 break;
@@ -908,11 +913,11 @@ class AwaInterpreter
         }
     }
 
-    public run(): void
+    public async run(): Promise<void>
     {
         while(this.#awaindex < this.#awatokens.length)
         {
-            this.step();
+            await this.step();
         }
     }
 

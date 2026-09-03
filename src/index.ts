@@ -4,6 +4,7 @@ function main(): void
     const awaOutputEl = document.querySelector("#awaout") as HTMLTextAreaElement;
     const runScriptBtn = document.querySelector(".run") as HTMLButtonElement;
     const stepScriptBtn = document.querySelector(".step") as HTMLButtonElement;
+    const awaindexEl = document.querySelector(".awaindex") as HTMLSpanElement;
     const executionTimeEl = document.querySelector(".executionTime") as HTMLSpanElement;
     const commandsListEl = document.querySelector(".commands") as HTMLOListElement;
     const bubbleAbyssDisplayEl = document.querySelector(".bubble-abyss") as HTMLOListElement;
@@ -41,6 +42,7 @@ function main(): void
     function
     updateStats(): void
     {
+        awaindexEl.textContent = String(awaInterpreter.awaindex);
         executionTimeEl.textContent = String(awaInterpreter.executionTime);
     }
 
@@ -99,7 +101,7 @@ function main(): void
     function
     preExecutionSteps(): void
     {
-        if(isUsingLatestAwatalk) return;
+        if(isUsingLatestAwatalk && !awaInterpreter.hasFinished) return;
         isUsingLatestAwatalk = true;
 
         clearOutput();
@@ -108,18 +110,18 @@ function main(): void
     }
 
     // EVENT LISTENERS
-    runScriptBtn.addEventListener("click", () =>
+    runScriptBtn.addEventListener("click", async () =>
     {
         preExecutionSteps();
-        awaInterpreter.run();
+        await awaInterpreter.run();
         updateStats();
         updateBubbleAbyssDisplay();
     })
     
-    stepScriptBtn.addEventListener("click", () =>
+    stepScriptBtn.addEventListener("click", async () =>
     {
         preExecutionSteps();
-        awaInterpreter.step();
+        await awaInterpreter.step();
         updateStats();
         updateBubbleAbyssDisplay();
     })
