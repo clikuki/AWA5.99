@@ -1,23 +1,114 @@
 *, *::before, *::after
 {
     box-sizing: border-box;
-    background-color: #777;
+}
+
+:root
+{
+    --jelly-main: #cde9f4;
+    --jelly-secondary: #fef6b6;
+    --corner-radius: 1rem;
 }
 
 body
 {
     margin: 0;
     padding: 1rem;
+    font-family: Comic Sans MS, Arial, Helvetica, sans-serif;
+    
+    background-color: var(--jelly-main);
+    accent-color: var(--jelly-secondary);
 }
 
-textarea
+h1
 {
-    font-size: 1.5rem;
-    color: white;
-    padding: 1rem;
-    width: 100%;
-    resize: none;
-    min-height: 20rem;
-    border: 2px solid white;
-    background-color: #0003;
+    margin: 0 0 2rem 0;
+}
+
+.wrapper
+{
+    position: relative;
+    margin-bottom: 2rem;
+
+    > label
+    {
+        position: absolute;
+        top: 0;
+        left: 0;
+        padding: .1rem .5rem;
+        background-color: var(--jelly-main);
+        border: 2px solid white;
+        translate: -10% -50%;
+        border-radius: var(--corner-radius);
+    }
+
+    > textarea
+    {
+        
+        font-size: 1.5rem;
+        font-family: monospace;
+
+        background-color: white;
+        color: black;
+
+        padding: 1rem;
+        width: 100%;
+        min-height: 10rem;
+
+        resize: none;
+        border: 2px solid white;
+        border-radius: var(--corner-radius);
+        border-top-left-radius: 0;
+        
+        &#awatalk
+        {
+            min-height: 20rem;
+        }
+
+        &:focus-visible,
+        &:focus-visible + label
+        {
+            outline: 2px solid var(--jelly-secondary);
+        }
+    }
+}
+
+.controls-container
+{
+    display: flex;
+    gap: 1rem;
+    padding: 0 1rem;
+
+    > button
+    {
+        text-transform: uppercase;
+        padding: .3rem .7rem;
+        font: inherit;
+        background-color: transparent;
+        font-size: 1.4rem;
+        border: 2px solid white;
+        outline: 3px solid transparent;
+        
+        &:hover
+        {
+            transition: rotate 300ms;
+            rotate: 720deg;
+        }
+
+        &:focus-visible,
+        &:hover
+        {
+            border-color: var(--jelly-secondary);
+            outline-color: var(--jelly-secondary);
+        }
+    }
+}
+
+@media (prefers-reduced-motion: reduce)
+{
+    button:hover
+    {
+        transition: none;
+        rotate: 0;
+    }
 }

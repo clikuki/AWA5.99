@@ -745,6 +745,10 @@ class AwaInterpreter
     #labelIndices = new Map<number, number>();
     #bubbleAbyss = new BubbleAbyss;
 
+    get awaindex(): number { return this.#awaindex; }
+    get awatokens(): readonly number[] { return this.#awatokens }
+    get executionTime(): number { return this.#executionTime; }
+
     public UseAwatalk(awatalk: string): void
     {
         const awabits = parseAwas(awatalk);

@@ -4,15 +4,28 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Awa5.1 Interpreter</title>
+	<title>Awa5.99 Interpreter</title>
 	<link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-	<textarea id="awascript"></textarea>
-	<button id="run">Run</button>
-	<button id="step">Step</button>
-	<p id="awaout"></p>
+	<h1>🌠 Maximal AWA5.99 Interpreter 🌠</h1>
+	<main>
+		<div class="wrapper">
+			<textarea id="awatalk" spellcheck="false"></textarea>
+			<label for="awatalk">Awatalk</label>
+		</div>
+
+		<div class="wrapper">
+			<textarea id="awaout" disabled></textarea>
+			<label for="awaout">Output</label>
+		</div>
+
+		<div class="controls-container">
+			<button class="run">Run</button>
+			<button class="step">Step</button>
+		</div>
+	</main>
 
 	<script src="/build/awaparser.js"></script>
 	<script src="/build/awatokener.js"></script>

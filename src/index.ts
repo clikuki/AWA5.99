@@ -1,9 +1,9 @@
 function main(): void
 {
-    const awatalkInput = document.getElementById("awascript") as HTMLTextAreaElement;
-    const awaOutputEl = document.getElementById("awaout") as HTMLParagraphElement;
-    const runScriptBtn = document.getElementById("run") as HTMLButtonElement;
-    const stepScriptBtn = document.getElementById("step") as HTMLButtonElement;
+    const awatalkInput = document.querySelector("#awatalk") as HTMLTextAreaElement;
+    const awaOutputEl = document.querySelector("#awaout") as HTMLTextAreaElement;
+    const runScriptBtn = document.querySelector(".run") as HTMLButtonElement;
+    const stepScriptBtn = document.querySelector(".step") as HTMLButtonElement;
     
     // I/O METHODS
     function
@@ -19,13 +19,13 @@ function main(): void
     function
     onOutput(out: string): void
     {
-        awaOutputEl.textContent += out;
+        awaOutputEl.value += out;
     }
 
     function
     clearOutput(): void
     {
-        awaOutputEl.textContent = "";
+        awaOutputEl.value = "";
     }
     
     // AWAXECUTION
@@ -64,6 +64,9 @@ function main(): void
 
     // Invalidate stored awatalk
     awatalkInput.addEventListener("input", () => isUsingFreshAwatalk = false);
+
+    // Init
+    clearOutput();
 }
 
 main();
