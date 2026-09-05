@@ -53,15 +53,16 @@ function main(): void
             awatokens = awaInterpreter.awatokens;
         for(let i = 0; i < awatokens.length; i++)
         {
+            const cmdEl = document.createElement("li");
             const token = awatokens[i];
             let content = AWATISM_CODE_COMMANDS[token];
 
             if(paramedAwatisms.includes(token)) {
                 if(i >= awatokens.length - 1) content += " ?";
                 else content += " " + awatokens[++i];
+                cmdEl.classList.add("paramed");
             }
 
-            const cmdEl = document.createElement("li");
             cmdEl.textContent = content;
             newCommands.push(cmdEl);
         }

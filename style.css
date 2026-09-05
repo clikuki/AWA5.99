@@ -155,7 +155,6 @@ aside ol
 
     li::before
     {
-        counter-increment: section;
         content: counter(section, decimal) ") ";
     }
 
@@ -173,19 +172,30 @@ aside ol
 .commands li
 {
     position: relative;
-    
+
     &::before
     {
+        counter-increment: section;
         position: absolute;
         top: 0%;
         right: 100%;
         translate: -0.5rem;
+    }
+
+    &.paramed + li
+    {
+        counter-increment: section;
     }
 }
 
 .bubble-abyss
 {
     padding-left: 1rem;
+
+    li::before
+    {
+        counter-increment: section;
+    }
 
     ol
     {
