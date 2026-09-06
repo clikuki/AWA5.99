@@ -1,4 +1,4 @@
-function
+export function
 parseAwas(awatalk: string): boolean[]
 {
     const bitArray: boolean[] = [];

@@ -112,19 +112,18 @@ aside
         background-color: transparent;
         font-size: 1.4rem;
         border: 2px solid white;
-        outline: 3px solid transparent;
         
         &:hover
         {
             transition: rotate 300ms;
             rotate: 720deg;
         }
-
+        
         &:focus,
         &:hover
         {
             border-color: var(--jelly-secondary);
-            outline-color: var(--jelly-secondary);
+            outline: 3px solid var(--jelly-secondary);
         }
     }
 }
@@ -221,6 +220,6 @@ aside ol
     button:hover
     {
         transition: none;
-        rotate: 0;
+        rotate: 0deg;
     }
 }

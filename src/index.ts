@@ -1,3 +1,5 @@
+import { AwaInterpreter, AWATISM_CODE_COMMANDS, paramedAwatisms } from "./awaxecute";
+
 function main(): void
 {
     const awatalkInput = document.querySelector("#awatalk") as HTMLTextAreaElement;

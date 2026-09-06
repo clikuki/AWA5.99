@@ -1,4 +1,4 @@
-const tokenizeAwas = (() => {
+export const tokenizeAwas = (() => {
     const tokenParams = new Map([
         // 0b01 to designate original 8-bit byte size based on AWA5.0 specs
         // 0b10 to designate signed integer type
