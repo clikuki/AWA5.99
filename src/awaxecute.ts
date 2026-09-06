@@ -1,5 +1,5 @@
-import { parseAwas } from "./awaparser";
-import { tokenizeAwas } from "./awatokener";
+import { parseAwas } from "./awaparser.js";
+import { tokenizeAwas } from "./awatokener.js";
 
 const enum AWATISMS {
     "NOP" = 0b00000,

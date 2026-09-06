@@ -1,4 +1,4 @@
-import { AwaInterpreter, AWATISM_CODE_COMMANDS, paramedAwatisms } from "./awaxecute";
+import { AwaInterpreter, AWATISM_CODE_COMMANDS, paramedAwatisms } from "./awaxecute.js";
 
 function main(): void
 {
