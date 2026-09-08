@@ -8,9 +8,11 @@ import type { AwaInputRequest,
               AwatalkSetRequest,
               StatsWatchChanges,
               NestedNumberArray, 
-              StatsWatchCallback } from "./awatypes.js";
+              StatsWatchCallback, 
+              AwaRunHaltingRequest, 
+              AwaRunHaltingResponse} from "./awatypes.js";
 
-type awaOutbounds = AwaStatsRefresh | AwaInputRequest | AwaOutputResponse;
+type awaOutbounds = AwaStatsRefresh | AwaInputRequest | AwaOutputResponse | AwaRunHaltingRequest;
 
 export class Awarunner
 {
@@ -20,6 +22,9 @@ export class Awarunner
     #awatokens: readonly number[] = [];
     #bubbles: NestedNumberArray = [];
     #hasFinished = true;
+
+    #isRunning = false;
+    #haltRunAtNextOpportunity = false;
     
     #getInput: InputCallback | null = null;
     #sendOutput: OutputCallback | null = null;
@@ -50,6 +55,7 @@ export class Awarunner
 
                     this.#watchStats?.(changed);
                     }break;
+
                 case "INPUT_REQUEST":
                     if(!this.#getInput) break;
                     this.#getInput(data.inputType)
@@ -57,6 +63,19 @@ export class Awarunner
                             {msgType: "INPUT_RESPONSE", inStr } satisfies AwaInputResponse
                         ))
                     break;
+
+                case "HALT-RUN-REQUEST":
+                    this.#worker.postMessage({
+                        msgType: "HALT-RUN-RESPONSE",
+                        haltRun: this.#haltRunAtNextOpportunity
+                    } satisfies AwaRunHaltingResponse);
+                    if(this.#haltRunAtNextOpportunity)
+                    {
+                        this.#isRunning = false;
+                        this.#haltRunAtNextOpportunity = false;
+                    }
+                    break;
+
                 case "OUTPUT":
                     this.#sendOutput?.(data.outStr);
                     break;
@@ -109,11 +128,26 @@ export class Awarunner
 
     public async run(): Promise<void>
     {
-        this.#worker.postMessage({ msgType: "RUN" } satisfies AwaRunRequest);
+        if(this.#isRunning)
+        {
+            this.#haltRunAtNextOpportunity = true;
+        }
+        else
+        {
+            this.#isRunning = true;
+            this.#worker.postMessage({ msgType: "RUN" } satisfies AwaRunRequest);
+        }
     }
 
     public step(): void
     {
-        this.#worker.postMessage({ msgType: "STEP" } satisfies AwaStepRequest);
+        if(this.#isRunning)
+        {
+            this.#haltRunAtNextOpportunity = true;
+        }
+        else
+        {
+            this.#worker.postMessage({ msgType: "STEP" } satisfies AwaStepRequest);
+        }
     }
 }

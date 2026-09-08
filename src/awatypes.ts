@@ -29,6 +29,15 @@ export interface AwaRunRequest
 {
     msgType: "RUN";
 }
+export interface AwaRunHaltingRequest
+{
+    msgType: "HALT-RUN-REQUEST";
+}
+export interface AwaRunHaltingResponse
+{
+    msgType: "HALT-RUN-RESPONSE";
+    haltRun: boolean;
+}
 export interface AwaStepRequest
 {
     msgType: "STEP";

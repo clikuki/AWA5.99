@@ -2,17 +2,20 @@ import { AwaInterpreter } from "./awaxecute.js";
 import type { AwaInputRequest,
               AwaInputResponse,
               AwaOutputResponse,
+              AwaRunHaltingRequest,
+              AwaRunHaltingResponse,
               AwaRunRequest,
               AwaStatsRefresh,
               AwaStepRequest,
               AwatalkSetRequest } from "./awatypes.js"; 
 
-type awaInbounds = AwaInputResponse | AwatalkSetRequest | AwaRunRequest | AwaStepRequest;
+type awaInbounds = AwaInputResponse | AwatalkSetRequest | AwaRunRequest | AwaStepRequest | AwaRunHaltingResponse;
 
 function startWorker(): void
 {
     const awaInterpreter = new AwaInterpreter;
     let sendInputCallback: ((inStr: string) => void) | null = null;
+    let stopExecutionCallback: ((stop: boolean) => void) | null = null;
 
     function sendResetStats(): void
     {
@@ -37,6 +40,12 @@ function startWorker(): void
         } satisfies AwaStatsRefresh);
     }
 
+    function checkIfContinueExecution(): Promise<boolean>
+    {
+        postMessage({ msgType: "HALT-RUN-REQUEST" } satisfies AwaRunHaltingRequest);
+        return new Promise(res => stopExecutionCallback = res);
+    }
+
     addEventListener("message", async (ev: MessageEvent<awaInbounds>) =>
     {
         const data = ev.data;
@@ -55,11 +64,16 @@ function startWorker(): void
                 const runGen = awaInterpreter.run();
                 while(true)
                 {
-                    const stopExecution = false; // todo: figure out way to share exit flag to worker
+                    const stopExecution = await checkIfContinueExecution();
                     const { done } = await runGen.next(stopExecution);
                     sendExecutionStats();
                     if(done) break;
                 }
+                break;
+            
+            case "HALT-RUN-RESPONSE":
+                stopExecutionCallback?.(data.haltRun);
+                stopExecutionCallback = null;
                 break;
 
             case "STEP":
