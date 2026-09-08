@@ -1,11 +1,11 @@
 export interface AwaStatsRefresh
 {
     msgType: "STATS_RESPONSE";
-    awaindex: number;
-    executionTime: number;
-    awatokens: readonly number[];
-    bubbles: NestedNumberArray;
-    hasFinished: boolean;
+    awaindex?: number;
+    executionTime?: number;
+    awatokens?: readonly number[];
+    bubbles?: NestedNumberArray;
+    hasFinished?: boolean;
 }
 
 export interface AwaInputRequest
@@ -39,6 +39,16 @@ export interface AwatalkSetRequest
     msgType: "SET_AWATALK";
     awatalk: string;
 }
+
+export interface StatsWatchChanges
+{
+    awaindex: boolean;
+    executionTime: boolean;
+    awatokens: boolean;
+    bubbles: boolean;
+    hasFinished: boolean;
+}
+export type StatsWatchCallback = (changed: StatsWatchChanges) => void
 
 export type Bubble = SimpleBubble | doubleBubble;
 export interface SimpleBubble

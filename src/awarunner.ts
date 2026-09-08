@@ -6,7 +6,9 @@ import type { AwaInputRequest,
               AwaStatsRefresh,
               AwaStepRequest,
               AwatalkSetRequest,
-              NestedNumberArray } from "./awatypes.js";
+              StatsWatchChanges,
+              NestedNumberArray, 
+              StatsWatchCallback} from "./awatypes.js";
 
 type awaOutbounds = AwaStatsRefresh | AwaInputRequest | AwaOutputResponse;
 
@@ -21,8 +23,7 @@ export class Awarunner
     
     #getInput: InputCallback | null = null;
     #sendOutput: OutputCallback | null = null;
-
-    #signalRefresedStats: (() => void) | null = null;
+    #watchStats: StatsWatchCallback | null = null;
 
     constructor()
     {
@@ -33,14 +34,21 @@ export class Awarunner
             const data = ev.data;
             switch (data.msgType) {
                 case "STATS_RESPONSE": {
-                    this.#awaindex = data.awaindex;
-                    this.#executionTime = data.executionTime;
-                    this.#awatokens = data.awatokens;
-                    this.#bubbles = data.bubbles;
-                    this.#hasFinished = data.hasFinished;
-                    
-                    this.#signalRefresedStats?.();
-                    this.#signalRefresedStats = null;
+                    const changed: StatsWatchChanges = {
+                        awaindex: data.awaindex !== undefined,
+                        executionTime: data.executionTime !== undefined,
+                        awatokens: data.awatokens !== undefined,
+                        bubbles: data.bubbles !== undefined,
+                        hasFinished: data.hasFinished !== undefined,
+                    }
+
+                    if(changed.awaindex) this.#awaindex = data.awaindex!;
+                    if(changed.executionTime) this.#executionTime = data.executionTime!;
+                    if(changed.awatokens) this.#awatokens = data.awatokens!;
+                    if(changed.bubbles) this.#bubbles = data.bubbles!;
+                    if(changed.hasFinished) this.#hasFinished = data.hasFinished!;
+
+                    this.#watchStats?.(changed);
                     }break;
                 case "INPUT_REQUEST":
                     if(!this.#getInput) break;
@@ -79,6 +87,11 @@ export class Awarunner
         return this.#hasFinished;
     };
 
+    public watchStatsChange(cb: StatsWatchCallback): void
+    {
+        this.#watchStats = cb;
+    }
+
     public UseInputCallback(cb: InputCallback): void
     {
         this.#getInput = cb;
@@ -94,15 +107,13 @@ export class Awarunner
         this.#worker.postMessage({ msgType: "SET_AWATALK", awatalk } satisfies AwatalkSetRequest);
     }
 
-    public run(): Promise<void>
+    public run(): void
     {
         this.#worker.postMessage({ msgType: "RUN" } satisfies AwaRunRequest);
-        return new Promise(res => this.#signalRefresedStats = res);
     }
 
-    public step(): Promise<void>
+    public step(): void
     {
         this.#worker.postMessage({ msgType: "STEP" } satisfies AwaStepRequest);
-        return new Promise(res => this.#signalRefresedStats = res);
     }
 }

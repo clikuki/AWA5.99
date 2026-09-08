@@ -103,33 +103,32 @@ function main(): void
         container.replaceChildren(...elements);
     }
 
-    function
-    preExecutionSteps(): void
+    async function doExecute(isStep: boolean)
     {
-        if(isUsingLatestAwatalk && !awarunner.hasFinished) return;
-        isUsingLatestAwatalk = true;
+        const performReset = !isUsingLatestAwatalk || awarunner.hasFinished;
 
-        clearOutput();
-        awarunner.UseAwatalk(awatalkInput.value);
+        if(performReset)
+        {
+            isUsingLatestAwatalk = true;
+    
+            clearOutput();
+            awarunner.UseAwatalk(awatalkInput.value);
+        }
+
+        if(!performReset || !isStep)
+        {
+            if(isStep) awarunner.step();
+            else awarunner.run();
+        }
     }
 
     // EVENT LISTENERS
-    runScriptBtn.addEventListener("click", async () =>
-    {
-        preExecutionSteps();
-        await awarunner.run();
-        updateStats();
-        updateCommandsList();
-        updateBubbleAbyssDisplay();
-    })
-    
-    stepScriptBtn.addEventListener("click", async () =>
-    {
-        preExecutionSteps();
-        await awarunner.step();
-        updateStats();
-        updateCommandsList();
-        updateBubbleAbyssDisplay();
+    runScriptBtn.addEventListener("click", doExecute.bind(null, false))
+    stepScriptBtn.addEventListener("click", doExecute.bind(null, true))
+    awarunner.watchStatsChange((changed) => {
+        if(changed.awaindex || changed.executionTime) updateStats();
+        if(changed.awatokens) updateCommandsList();
+        if(changed.bubbles) updateBubbleAbyssDisplay();
     })
 
     // Invalidate stored awatalk

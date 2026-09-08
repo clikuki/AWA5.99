@@ -14,16 +14,25 @@ function startWorker(): void
     const awaInterpreter = new AwaInterpreter;
     let sendInputCallback: ((inStr: string) => void) | null = null;
 
-    function sendStats(): void
+    function sendResetStats(): void
     {
-        const awatokens = awaInterpreter.awatokens;
-        const bubbles = awaInterpreter.getBubblesList();
+        postMessage({
+            msgType: "STATS_RESPONSE",
+            awaindex: 0,
+            executionTime: 0,
+            awatokens: awaInterpreter.awatokens,
+            bubbles: [],
+            hasFinished: awaInterpreter.hasFinished,
+        } satisfies AwaStatsRefresh)
+    }
+
+    function sendExecutionStats(): void
+    {
         postMessage({
             msgType: "STATS_RESPONSE",
             awaindex: awaInterpreter.awaindex,
             executionTime: awaInterpreter.executionTime,
-            awatokens: awatokens,
-            bubbles: bubbles,
+            bubbles: awaInterpreter.getBubblesList(),
             hasFinished: awaInterpreter.hasFinished,
         } satisfies AwaStatsRefresh);
     }
@@ -38,17 +47,18 @@ function startWorker(): void
                 break;
 
             case "SET_AWATALK":
-                awaInterpreter.UseAwatalk(data.awatalk);
+                awaInterpreter.UseAwatalk(data.awatalk)
+                sendResetStats();
                 break;
 
             case "RUN":
                 awaInterpreter.run()
-                    .then(() => sendStats());
+                    .then(() => sendExecutionStats());
                 break;
 
             case "STEP":
                 awaInterpreter.step()
-                    .then(() => sendStats());
+                    .then(() => sendExecutionStats());
                 break;
         }
     })
