@@ -37,7 +37,7 @@ function startWorker(): void
         } satisfies AwaStatsRefresh);
     }
 
-    addEventListener("message", (ev: MessageEvent<awaInbounds>) =>
+    addEventListener("message", async (ev: MessageEvent<awaInbounds>) =>
     {
         const data = ev.data;
         switch (data.msgType) {
@@ -52,8 +52,10 @@ function startWorker(): void
                 break;
 
             case "RUN":
-                awaInterpreter.run()
-                    .then(() => sendExecutionStats());
+                for await (const _ of awaInterpreter.run())
+                {
+                    sendExecutionStats();
+                }
                 break;
 
             case "STEP":
