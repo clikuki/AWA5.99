@@ -1,4 +1,5 @@
-import { AwaInterpreter, AWATISM_CODE_COMMANDS, paramedAwatisms } from "./awaxecute.js";
+import { AWATISM_CODE_COMMANDS, paramedAwatisms } from "./awaconsts.js";
+import { Awarunner } from "./awarunner.js";
 
 function main(): void
 {
@@ -26,6 +27,7 @@ function main(): void
     onOutput(out: string): void
     {
         awaOutputEl.value += out;
+        awaOutputEl.scrollTop = awaOutputEl.scrollHeight;
     }
 
     function
@@ -34,25 +36,25 @@ function main(): void
         awaOutputEl.value = "";
     }
     
-    // AWAXECUTION
-    const awaInterpreter = new AwaInterpreter;
-    awaInterpreter.UseInputCallback(onInput);
-    awaInterpreter.UseOutputCallback(onOutput);
+    // AWAXECUTION RUNNER 
+    const awarunner = new Awarunner;
+    awarunner.UseInputCallback(onInput);
+    awarunner.UseOutputCallback(onOutput);
 
     let isUsingLatestAwatalk = false;
 
     function
     updateStats(): void
     {
-        awaindexEl.textContent = String(awaInterpreter.awaindex);
-        executionTimeEl.textContent = String(awaInterpreter.executionTime);
+        awaindexEl.textContent = String(awarunner.awaindex);
+        executionTimeEl.textContent = String(awarunner.executionTime);
     }
 
     function
     updateCommandsList(): void
     {
         const newCommands: HTMLLIElement[] = [],
-            awatokens = awaInterpreter.awatokens;
+            awatokens = awarunner.awatokens;
         for(let i = 0; i < awatokens.length; i++)
         {
             const cmdEl = document.createElement("li");
@@ -74,7 +76,7 @@ function main(): void
 
     function
     updateBubbleAbyssDisplay(
-        bubbles = awaInterpreter.getBubblesList(),
+        bubbles = awarunner.bubbles,
         container = bubbleAbyssDisplayEl
     ): void
     {
@@ -104,28 +106,29 @@ function main(): void
     function
     preExecutionSteps(): void
     {
-        if(isUsingLatestAwatalk && !awaInterpreter.hasFinished) return;
+        if(isUsingLatestAwatalk && !awarunner.hasFinished) return;
         isUsingLatestAwatalk = true;
 
         clearOutput();
-        awaInterpreter.UseAwatalk(awatalkInput.value);
-        updateCommandsList();
+        awarunner.UseAwatalk(awatalkInput.value);
     }
 
     // EVENT LISTENERS
     runScriptBtn.addEventListener("click", async () =>
     {
         preExecutionSteps();
-        await awaInterpreter.run();
+        await awarunner.run();
         updateStats();
+        updateCommandsList();
         updateBubbleAbyssDisplay();
     })
     
     stepScriptBtn.addEventListener("click", async () =>
     {
         preExecutionSteps();
-        await awaInterpreter.step();
+        await awarunner.step();
         updateStats();
+        updateCommandsList();
         updateBubbleAbyssDisplay();
     })
 

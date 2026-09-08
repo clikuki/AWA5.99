@@ -1,63 +1,7 @@
+import { AWATISMS, paramedAwatisms } from "./awaconsts.js";
 import { parseAwas } from "./awaparser.js";
 import { tokenizeAwas } from "./awatokener.js";
-
-const enum AWATISMS {
-    "NOP" = 0b00000,
-    "PRN" = 0b00001,
-    "PR1" = 0b00010,
-    "RED" = 0b00011,
-    "R3D" = 0b00100,
-    "BLO" = 0b00101,
-    "SBM" = 0b00110,
-    "POP" = 0b00111,
-    "DPL" = 0b01000,
-    "SRN" = 0b01001,
-    "MRG" = 0b01010,
-    "4DD" = 0b01011,
-    "SUB" = 0b01100,
-    "MUL" = 0b01101,
-    "DIV" = 0b01110,
-    "CNT" = 0b01111,
-    "LBL" = 0b10000,
-    "JMP" = 0b10001,
-    "EQL" = 0b10010,
-    "LSS" = 0b10011,
-    "GR8" = 0b10100,
-    "TRM" = 0b11111,
-}
-
-export const AWATISM_CODE_COMMANDS: Record<number, string> = {
-    0b00000: "NOP",
-    0b00001: "PRN",
-    0b00010: "PR1",
-    0b00011: "RED",
-    0b00100: "R3D",
-    0b00101: "BLO",
-    0b00110: "SBM",
-    0b00111: "POP",
-    0b01000: "DPL",
-    0b01001: "SRN",
-    0b01010: "MRG",
-    0b01011: "4DD",
-    0b01100: "SUB",
-    0b01101: "MUL",
-    0b01110: "DIV",
-    0b01111: "CNT",
-    0b10000: "LBL",
-    0b10001: "JMP",
-    0b10010: "EQL",
-    0b10011: "LSS",
-    0b10100: "GR8",
-    0b11111: "TRM",
-}
-
-export const paramedAwatisms = [
-    AWATISMS.BLO,
-    AWATISMS.SBM,
-    AWATISMS.SRN,
-    AWATISMS.JMP,
-    AWATISMS.LBL,
-];
+import { Bubble, doubleBubble, NestedNumberArray, SimpleBubble } from "./awatypes.js";
 
 interface CharacterMapping
 {
@@ -461,24 +405,6 @@ readNumberFromString(str: string): number
     if(numStr) return +numStr * (isNegative ? -1 : 1);
     else return NaN;
 }
-
-type Bubble = SimpleBubble | doubleBubble;
-interface SimpleBubble
-{
-    type: "SIMPLE";
-    value: number;
-    next: Bubble | null;
-    prev: Bubble | null;
-}
-interface doubleBubble
-{
-    type: "DOUBLE";
-    contents: Bubble | null;
-    next: Bubble | null;
-    prev: Bubble | null;
-}
-
-type NestedNumberArray = (NestedNumberArray | number)[];
 
 class BubbleAbyss
 {
@@ -976,14 +902,13 @@ class BubbleAbyss
     }
 }
 
-type InputCallback = (type: "STRING" | "NUMBER") => Promise<string>;
-type OutputCallback = (awaOutput: string) => void;
+export type InputCallback = (type: "STRING" | "NUMBER") => Promise<string>;
+export type OutputCallback = (awaOutput: string) => void;
 export class AwaInterpreter
 {
     #awatokens: number[] = [];
     #awaindex = 0;
     #executionTime = 0;
-    #immediateExecuteLimit = 1000;
 
     #getInput: InputCallback | null = null;
     #sendOutput: OutputCallback | null = null;
@@ -1130,10 +1055,6 @@ export class AwaInterpreter
         while(this.#awaindex < this.#awatokens.length)
         {
             await this.step();
-            if(this.#executionTime > this.#immediateExecuteLimit) await new Promise((res) =>
-            {
-                setTimeout(res, 1);
-            });
         }
     }
 
