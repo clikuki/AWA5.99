@@ -52,9 +52,13 @@ function startWorker(): void
                 break;
 
             case "RUN":
-                for await (const _ of awaInterpreter.run())
+                const runGen = awaInterpreter.run();
+                while(true)
                 {
+                    const stopExecution = false; // todo: figure out way to share exit flag to worker
+                    const { done } = await runGen.next(stopExecution);
                     sendExecutionStats();
+                    if(done) break;
                 }
                 break;
 

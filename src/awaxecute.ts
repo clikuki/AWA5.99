@@ -1050,12 +1050,12 @@ export class AwaInterpreter
         }
     }
 
-    public async* run(): AsyncGenerator<void, void, void>
+    public async* run(): AsyncGenerator<void, void, boolean>
     {
         while(this.#awaindex < this.#awatokens.length)
         {
             await this.step();
-            yield;
+            if(yield) break;
         }
     }
 

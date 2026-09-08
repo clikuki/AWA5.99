@@ -8,7 +8,7 @@ import type { AwaInputRequest,
               AwatalkSetRequest,
               StatsWatchChanges,
               NestedNumberArray, 
-              StatsWatchCallback} from "./awatypes.js";
+              StatsWatchCallback } from "./awatypes.js";
 
 type awaOutbounds = AwaStatsRefresh | AwaInputRequest | AwaOutputResponse;
 
@@ -107,7 +107,7 @@ export class Awarunner
         this.#worker.postMessage({ msgType: "SET_AWATALK", awatalk } satisfies AwatalkSetRequest);
     }
 
-    public run(): void
+    public async run(): Promise<void>
     {
         this.#worker.postMessage({ msgType: "RUN" } satisfies AwaRunRequest);
     }

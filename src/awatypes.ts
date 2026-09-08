@@ -27,11 +27,11 @@ export interface AwaOutputResponse
 
 export interface AwaRunRequest
 {
-    msgType: "RUN"
+    msgType: "RUN";
 }
 export interface AwaStepRequest
 {
-    msgType: "STEP"
+    msgType: "STEP";
 }
 
 export interface AwatalkSetRequest
