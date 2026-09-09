@@ -10,9 +10,16 @@ import type { AwaInputRequest,
               NestedNumberArray, 
               StatsWatchCallback, 
               AwaRunHaltingRequest, 
-              AwaRunHaltingResponse} from "./awatypes.js";
+              AwaRunHaltingResponse,
+              AwaControlsSharing,
+              AwaYieldMoment} from "./awatypes.js";
 
-type awaOutbounds = AwaStatsRefresh | AwaInputRequest | AwaOutputResponse | AwaRunHaltingRequest;
+type awaOutbounds =
+    | AwaStatsRefresh
+    | AwaInputRequest
+    | AwaOutputResponse
+    | AwaRunHaltingRequest
+    | AwaYieldMoment;
 
 type WaitHaltCallback = () => void;
 
@@ -27,6 +34,8 @@ export class Awarunner
 
     #isRunning = false;
     #haltRunAtNextOpportunity = false;
+
+    #controls: Uint8Array<SharedArrayBuffer> | null = null;
     
     #getInput: InputCallback | null = null;
     #sendOutput: OutputCallback | null = null;
@@ -36,6 +45,17 @@ export class Awarunner
     constructor()
     {
         this.#worker = new Worker("build/awaworker.js", { type: "module" });
+
+        if(crossOriginIsolated)
+        {
+            const sharedBuffer = new SharedArrayBuffer(4);
+            this.#controls = new Uint8Array(sharedBuffer);
+            this.#worker.postMessage({
+                msgType: "SHARE_CONTROL",
+                sharedBuffer
+            } satisfies AwaControlsSharing);
+            console.log("Main: Sent controls to worker")
+        }
 
         this.#worker.addEventListener("message", (ev: MessageEvent<awaOutbounds>) =>
         {
@@ -86,6 +106,10 @@ export class Awarunner
 
                 case "OUTPUT":
                     this.#sendOutput?.(data.outStr);
+                    break;
+                
+                case "YIELD":
+                    this.#worker.postMessage({ msgType: "YIELD" } satisfies AwaYieldMoment);
                     break;
             }
         })
@@ -151,6 +175,13 @@ export class Awarunner
     public stop(): Promise<void>
     {
         if(!this.#isRunning) return Promise.resolve();
+        if(this.#controls)
+        {
+            Atomics.store(this.#controls, 0, 1);
+            this.#isRunning = false;
+            return Promise.resolve();
+        }
+
         this.#haltRunAtNextOpportunity = true;
         return new Promise(res => this.#waitHalt = res);
     }

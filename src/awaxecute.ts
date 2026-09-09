@@ -1050,12 +1050,25 @@ export class AwaInterpreter
         }
     }
 
-    public async* run(): AsyncGenerator<void, void, boolean>
+    public async run(
+        runPostStep: () => any,
+        shouldHalt: () => Promise<boolean>,
+        yieldToWorker: () => Promise<void>,
+    ): Promise<void>
     {
+        const quantumMax = 1000;
+        let quantum = 0;
+
         while(this.#awaindex < this.#awatokens.length)
         {
             await this.step();
-            if(yield) break;
+            runPostStep();
+            if(await shouldHalt()) break;
+            if(++quantum >= quantumMax)
+            {
+                await yieldToWorker();
+                quantum = 0;
+            }
         }
     }
 

@@ -1,3 +1,14 @@
+export interface AwaControlsSharing
+{
+    msgType: "SHARE_CONTROL";
+    sharedBuffer: SharedArrayBuffer;
+}
+
+export interface AwaYieldMoment
+{
+    msgType: "YIELD";
+}
+
 export interface AwaStatsRefresh
 {
     msgType: "STATS_RESPONSE";
