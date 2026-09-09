@@ -14,6 +14,8 @@ import type { AwaInputRequest,
 
 type awaOutbounds = AwaStatsRefresh | AwaInputRequest | AwaOutputResponse | AwaRunHaltingRequest;
 
+type WaitHaltCallback = () => void;
+
 export class Awarunner
 {
     #worker: Worker;
@@ -29,6 +31,7 @@ export class Awarunner
     #getInput: InputCallback | null = null;
     #sendOutput: OutputCallback | null = null;
     #watchStats: StatsWatchCallback | null = null;
+    #waitHalt: WaitHaltCallback | null = null;
 
     constructor()
     {
@@ -73,6 +76,9 @@ export class Awarunner
                     {
                         this.#isRunning = false;
                         this.#haltRunAtNextOpportunity = false;
+
+                        this.#waitHalt?.();
+                        this.#waitHalt = null;
                     }
                     break;
 
@@ -104,7 +110,7 @@ export class Awarunner
     
     get hasFinished(): boolean {
         return this.#hasFinished;
-    };
+    }
 
     public watchStatsChange(cb: StatsWatchCallback): void
     {
@@ -123,6 +129,7 @@ export class Awarunner
 
     public UseAwatalk(awatalk: string): void
     {
+        if(this.#isRunning) return;
         this.#worker.postMessage({ msgType: "SET_AWATALK", awatalk } satisfies AwatalkSetRequest);
     }
 
@@ -139,9 +146,10 @@ export class Awarunner
         this.#worker.postMessage({ msgType: "STEP" } satisfies AwaStepRequest);
     }
 
-    public stop(): void
+    public stop(): Promise<void>
     {
-        if(!this.#isRunning) return;
+        if(!this.#isRunning) return Promise.resolve();
         this.#haltRunAtNextOpportunity = true;
+        return new Promise(res => this.#waitHalt = res);
     }
 }

@@ -8,6 +8,7 @@ function main(): void
     const runScriptBtn = document.querySelector(".run") as HTMLButtonElement;
     const stopScriptBtn = document.querySelector(".stop") as HTMLButtonElement;
     const stepScriptBtn = document.querySelector(".step") as HTMLButtonElement;
+    const resetScriptBtn = document.querySelector(".reset") as HTMLButtonElement;
     const awaindexEl = document.querySelector(".awaindex") as HTMLSpanElement;
     const executionTimeEl = document.querySelector(".executionTime") as HTMLSpanElement;
     const commandsListEl = document.querySelector(".commands") as HTMLOListElement;
@@ -104,17 +105,20 @@ function main(): void
         container.replaceChildren(...elements);
     }
 
-    function doExecute(isStep: boolean)
+    async function resetRunner(): Promise<void>
+    {
+        await awarunner.stop();
+
+        clearOutput();
+        awarunner.UseAwatalk(awatalkInput.value);
+        isUsingLatestAwatalk = true;
+    }
+
+    async function doExecute(isStep: boolean)
     {
         const performReset = !isUsingLatestAwatalk || awarunner.hasFinished;
 
-        if(performReset)
-        {
-            isUsingLatestAwatalk = true;
-    
-            clearOutput();
-            awarunner.UseAwatalk(awatalkInput.value);
-        }
+        if(performReset) await resetRunner();
 
         if(!performReset || !isStep)
         {
@@ -126,8 +130,8 @@ function main(): void
     // EVENT LISTENERS
     runScriptBtn.addEventListener("click", doExecute.bind(null, false));
     stepScriptBtn.addEventListener("click", doExecute.bind(null, true));
-
     stopScriptBtn.addEventListener("click", () => awarunner.stop());
+    resetScriptBtn.addEventListener("click", resetRunner);
     
     awarunner.watchStatsChange((changed) => {
         if(changed.awaindex || changed.executionTime) updateStats();
