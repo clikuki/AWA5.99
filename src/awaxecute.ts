@@ -1056,7 +1056,7 @@ export class AwaInterpreter
         yieldToWorker: () => Promise<void>,
     ): Promise<void>
     {
-        const quantumMax = 1000;
+        const quantumMax = 10;
         let quantum = 0;
 
         while(this.#awaindex < this.#awatokens.length)
