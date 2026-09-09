@@ -56,6 +56,8 @@ export class Awarunner
                     if(changed.bubbles) this.#bubbles = data.bubbles!;
                     if(changed.hasFinished) this.#hasFinished = data.hasFinished!;
 
+                    if(this.#hasFinished) this.#isRunning = false;
+
                     this.#watchStats?.(changed);
                     }break;
 
