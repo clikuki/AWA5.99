@@ -95,32 +95,54 @@ main
 /* || SIDEBAR */
 aside
 {
-    padding: 1rem;
+    padding: 0 1rem;
 }
 
 .controls
 {
     grid-column: 1/3;
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 1rem;
 
     > button
     {
+        /* Fake button visual on top of DOM button; prevents change in hitbox during rotation */
+        position: relative;
         text-transform: uppercase;
         padding: .3rem .7rem;
         font: inherit;
         background-color: transparent;
         font-size: 1.4rem;
-        border: 2px solid white;
+        color: transparent;
+        border: none;
+        outline: none;
+
+        &::before
+        {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            padding: .3rem .7rem;
+            color: black;
+            border: 2px solid white;
+        }
+
+        &.run::before { content: "Run"; }
+        &.stop::before { content: "Stop"; }
+        &.step::before { content: "Step"; }
+        &.reset::before { content: "Reset"; }
         
-        &:hover
+        &:hover::before
         {
             transition: rotate 300ms;
             rotate: 720deg;
         }
         
-        &:focus,
-        &:hover
+        &:focus-visible::before,
+        &:hover::before
         {
             border-color: var(--jelly-secondary);
             outline: 3px solid var(--jelly-secondary);

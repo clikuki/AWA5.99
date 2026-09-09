@@ -42,7 +42,7 @@ function startWorker(): void
 
     function checkIfContinueExecution(): Promise<boolean>
     {
-        postMessage({ msgType: "HALT-RUN-REQUEST" } satisfies AwaRunHaltingRequest);
+        postMessage({ msgType: "HALT_RUN_REQUEST" } satisfies AwaRunHaltingRequest);
         return new Promise(res => stopExecutionCallback = res);
     }
 
@@ -71,7 +71,7 @@ function startWorker(): void
                 }
                 break;
             
-            case "HALT-RUN-RESPONSE":
+            case "HALT_RUN_RESPONSE":
                 stopExecutionCallback?.(data.haltRun);
                 stopExecutionCallback = null;
                 break;

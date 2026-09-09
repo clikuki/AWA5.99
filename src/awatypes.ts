@@ -31,11 +31,11 @@ export interface AwaRunRequest
 }
 export interface AwaRunHaltingRequest
 {
-    msgType: "HALT-RUN-REQUEST";
+    msgType: "HALT_RUN_REQUEST";
 }
 export interface AwaRunHaltingResponse
 {
-    msgType: "HALT-RUN-RESPONSE";
+    msgType: "HALT_RUN_RESPONSE";
     haltRun: boolean;
 }
 export interface AwaStepRequest

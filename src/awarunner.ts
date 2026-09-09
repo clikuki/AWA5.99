@@ -64,9 +64,9 @@ export class Awarunner
                         ))
                     break;
 
-                case "HALT-RUN-REQUEST":
+                case "HALT_RUN_REQUEST":
                     this.#worker.postMessage({
-                        msgType: "HALT-RUN-RESPONSE",
+                        msgType: "HALT_RUN_RESPONSE",
                         haltRun: this.#haltRunAtNextOpportunity
                     } satisfies AwaRunHaltingResponse);
                     if(this.#haltRunAtNextOpportunity)
@@ -126,28 +126,22 @@ export class Awarunner
         this.#worker.postMessage({ msgType: "SET_AWATALK", awatalk } satisfies AwatalkSetRequest);
     }
 
-    public async run(): Promise<void>
+    public run(): void
     {
-        if(this.#isRunning)
-        {
-            this.#haltRunAtNextOpportunity = true;
-        }
-        else
-        {
-            this.#isRunning = true;
-            this.#worker.postMessage({ msgType: "RUN" } satisfies AwaRunRequest);
-        }
+        if(this.#isRunning) return;
+        this.#isRunning = true;
+        this.#worker.postMessage({ msgType: "RUN" } satisfies AwaRunRequest);
     }
 
     public step(): void
     {
-        if(this.#isRunning)
-        {
-            this.#haltRunAtNextOpportunity = true;
-        }
-        else
-        {
-            this.#worker.postMessage({ msgType: "STEP" } satisfies AwaStepRequest);
-        }
+        if(this.#isRunning) return;
+        this.#worker.postMessage({ msgType: "STEP" } satisfies AwaStepRequest);
+    }
+
+    public stop(): void
+    {
+        if(!this.#isRunning) return;
+        this.#haltRunAtNextOpportunity = true;
     }
 }
