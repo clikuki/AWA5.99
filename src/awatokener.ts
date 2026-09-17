@@ -1,12 +1,13 @@
 export const tokenizeAwas = (() => {
     const tokenParams = new Map([
-        // 0b01 to designate original 8-bit byte size based on AWA5.0 specs
-        // 0b10 to designate signed integer type
-        [0x05, 0b01],
-        [0x06, 0b10],
-        [0x09, 0b10],
-        [0x10, 0b10],
-        [0x11, 0b10],
+        // TRUE  = signed   8 bit parameter
+        // FALSE = unsigned 5 bit parameter (unless forced 8 bit sized is enabled)
+        [0x05, true],
+        [0x06, false],
+        [0x09, false],
+        [0x10, false],
+        [0x11, false],
+        [0x1D, false],
     ]);
 
     return function
@@ -40,17 +41,16 @@ export const tokenizeAwas = (() => {
                     if(isParam) isParam = false;
                     else
                     {
-                        const paramFlags = tokenParams.get(currToken);
-                        if(paramFlags !== undefined)
+                        const isSignedEightBit = tokenParams.get(currToken);
+                        if(isSignedEightBit !== undefined)
                         {
                             isParam = true;
-                            isSigned = Boolean(paramFlags & 0b01);
+                            isSigned = isSignedEightBit;
                             
-                            const isEightSized = paramFlags & 0b01;
-                            if(isEightSized || useEightSizedBytes) groupUntil = 8;
+                            if(isSignedEightBit || useEightSizedBytes) groupUntil = 8;
                         }
                     }
-                            
+                    
                     currToken = 0;
                 }
             }

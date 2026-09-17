@@ -63,7 +63,7 @@ function main(): void
             const token = awatokens[i];
             let content = AWATISM_CODE_COMMANDS[token];
 
-            if(paramedAwatisms.includes(token)) {
+            if(paramedAwatisms.has(token)) {
                 if(i >= awatokens.length - 1) content += " ?";
                 else content += " " + awatokens[++i];
                 cmdEl.classList.add("paramed");

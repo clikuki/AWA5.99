@@ -1,351 +1,7 @@
-import { AWATISMS, paramedAwatisms } from "./awaconsts.js";
+import { AwaSCII, AWATISMS, FullerAwaSCII, paramedAwatisms } from "./awaconsts.js";
 import { parseAwas } from "./awaparser.js";
 import { tokenizeAwas } from "./awatokener.js";
-import { Bubble, doubleBubble, NestedNumberArray, SimpleBubble } from "./awatypes.js";
-
-interface CharacterMapping
-{
-    codeToChar: Record<number, string>,
-    charToCode: Record<string, number>,
-}
-
-const AwaSCII: CharacterMapping =
-{
-    codeToChar: {
-        0x00: "A",
-        0x01: "W",
-        0x02: "a",
-        0x03: "w",
-        0x04: "J",
-        0x05: "E",
-        0x06: "L",
-        0x07: "Y",
-        0x08: "H",
-        0x09: "O",
-        0x0A: "S",
-        0x0B: "I",
-        0x0C: "U",
-        0x0D: "M",
-        0x0E: "j",
-        0x0F: "e",
-        0x10: "l",
-        0x11: "y",
-        0x12: "h",
-        0x13: "o",
-        0x14: "s",
-        0x15: "i",
-        0x16: "u",
-        0x17: "m",
-        0x18: "P",
-        0x19: "C",
-        0x1A: "N",
-        0x1B: "T",
-        0x1C: "p",
-        0x1D: "c",
-        0x1E: "n",
-        0x1F: "t",
-        0x20: "B",
-        0x21: "D",
-        0x22: "F",
-        0x23: "G",
-        0x24: "R",
-        0x25: "b",
-        0x26: "d",
-        0x27: "f",
-        0x28: "g",
-        0x29: "r",
-        0x2A: "0",
-        0x2B: "1",
-        0x2C: "2",
-        0x2D: "3",
-        0x2E: "4",
-        0x2F: "5",
-        0x30: "6",
-        0x31: "7",
-        0x32: "8",
-        0x33: "9",
-        0x34: " ",
-        0x35: ".",
-        0x36: ",",
-        0x37: "!",
-        0x38: "'",
-        0x39: "(",
-        0x3A: ")",
-        0x3B: "~",
-        0x3C: "_",
-        0x3D: "/",
-        0x3E: ";",
-        0x3F: "\n",
-    },
-    charToCode: {
-        "A": 0x00,
-        "W": 0x01,
-        "a": 0x02,
-        "w": 0x03,
-        "J": 0x04,
-        "E": 0x05,
-        "L": 0x06,
-        "Y": 0x07,
-        "H": 0x08,
-        "O": 0x09,
-        "S": 0x0A,
-        "I": 0x0B,
-        "U": 0x0C,
-        "M": 0x0D,
-        "j": 0x0E,
-        "e": 0x0F,
-        "l": 0x10,
-        "y": 0x11,
-        "h": 0x12,
-        "o": 0x13,
-        "s": 0x14,
-        "i": 0x15,
-        "u": 0x16,
-        "m": 0x17,
-        "P": 0x18,
-        "C": 0x19,
-        "N": 0x1A,
-        "T": 0x1B,
-        "p": 0x1C,
-        "c": 0x1D,
-        "n": 0x1E,
-        "t": 0x1F,
-        "B": 0x20,
-        "D": 0x21,
-        "F": 0x22,
-        "G": 0x23,
-        "R": 0x24,
-        "b": 0x25,
-        "d": 0x26,
-        "f": 0x27,
-        "g": 0x28,
-        "r": 0x29,
-        "0": 0x2A,
-        "1": 0x2B,
-        "2": 0x2C,
-        "3": 0x2D,
-        "4": 0x2E,
-        "5": 0x2F,
-        "6": 0x30,
-        "7": 0x31,
-        "8": 0x32,
-        "9": 0x33,
-        " ": 0x34,
-        ".": 0x35,
-        ",": 0x36,
-        "!": 0x37,
-        "'": 0x38,
-        "(": 0x39,
-        ")": 0x3A,
-        "~": 0x3B,
-        "_": 0x3C,
-        "/": 0x3D,
-        ";": 0x3E,
-        "\n": 0x3F,
-    },
-}
-
-const FullerAwaSCII: CharacterMapping =
-{
-    codeToChar: {
-        0b0000000: "0",
-        0b0000001: "1",
-        0b0000010: "2",
-        0b0000011: "3",
-        0b0000100: "4",
-        0b0000101: "5",
-        0b0000110: "6",
-        0b0000111: "7",
-        0b0001000: "8",
-        0b0001001: "9",
-        0b0001010: "A",
-        0b0001011: "W",
-        0b0001100: "J",
-        0b0001101: "E",
-        0b0001110: "L",
-        0b0001111: "Y",
-        0b0010000: "H",
-        0b0010001: "O",
-        0b0010010: "S",
-        0b0010011: "I",
-        0b0010100: "U",
-        0b0010101: "M",
-        0b0010110: "B",
-        0b0010111: "C",
-        0b0011000: "D",
-        0b0011001: "F",
-        0b0011010: "G",
-        0b0011011: "K",
-        0b0011100: "N",
-        0b0011101: "P",
-        0b0011110: "Q",
-        0b0011111: "R",
-        0b0100000: "T",
-        0b0100001: "V",
-        0b0100010: "X",
-        0b0100011: "Z",
-        0b0100100: " ",
-        0b0100101: "\n",
-        0b0100110: "	",
-        0b0100111: "(",
-        0b0101000: "[",
-        0b0101001: "{",
-        0b0101010: "/",
-        0b0101011: ".",
-        0b0101100: ",",
-        0b0101101: "'",
-        0b0101110: "<",
-        0b0101111: "?",
-        0b0110000: "-",
-        0b0110001: "_",
-        0b0110010: "+",
-        0b0110011: "=",
-        0b0110100: "`",
-        0b0110101: "~",
-        0b0110110: "*",
-        0b0110111: ")",
-        0b0111000: "]",
-        0b0111001: "}",
-        0b0111010: "\\",
-        0b0111011: ":",
-        0b0111100: ";",
-        0b0111101: "\"",
-        0b0111110: ">",
-        0b0111111: "!",
-        0b1000000: "^",
-        0b1000001: "&",
-        0b1000010: "%",
-        0b1000011: "$",
-        0b1000100: "@",
-        0b1000101: "#",
-        0b1000110: "|",
-        0b1001010: "a",
-        0b1001011: "w",
-        0b1001100: "j",
-        0b1001101: "e",
-        0b1001110: "l",
-        0b1001111: "y",
-        0b1010000: "h",
-        0b1010001: "o",
-        0b1010010: "s",
-        0b1010011: "i",
-        0b1010100: "u",
-        0b1010101: "m",
-        0b1010110: "b",
-        0b1010111: "c",
-        0b1011000: "d",
-        0b1011001: "f",
-        0b1011010: "g",
-        0b1011011: "k",
-        0b1011100: "n",
-        0b1011101: "p",
-        0b1011110: "q",
-        0b1011111: "r",
-        0b1100000: "t",
-        0b1100001: "v",
-        0b1100010: "x",
-        0b1100011: "z",
-    },
-    charToCode: {
-        "0": 0b0000000,
-        "1": 0b0000001,
-        "2": 0b0000010,
-        "3": 0b0000011,
-        "4": 0b0000100,
-        "5": 0b0000101,
-        "6": 0b0000110,
-        "7": 0b0000111,
-        "8": 0b0001000,
-        "9": 0b0001001,
-        "A": 0b0001010,
-        "W": 0b0001011,
-        "J": 0b0001100,
-        "E": 0b0001101,
-        "L": 0b0001110,
-        "Y": 0b0001111,
-        "H": 0b0010000,
-        "O": 0b0010001,
-        "S": 0b0010010,
-        "I": 0b0010011,
-        "U": 0b0010100,
-        "M": 0b0010101,
-        "B": 0b0010110,
-        "C": 0b0010111,
-        "D": 0b0011000,
-        "F": 0b0011001,
-        "G": 0b0011010,
-        "K": 0b0011011,
-        "N": 0b0011100,
-        "P": 0b0011101,
-        "R": 0b0011110,
-        "Q": 0b0011111,
-        "T": 0b0100000,
-        "V": 0b0100001,
-        "X": 0b0100010,
-        "Z": 0b0100011,
-        " ": 0b0100100,
-        "\n": 0b0100101,
-        "	": 0b0100110,
-        "(": 0b0100111,
-        "[": 0b0101000,
-        "{": 0b0101001,
-        "/": 0b0101010,
-        ".": 0b0101011,
-        ",": 0b0101100,
-        "'": 0b0101101,
-        "<": 0b0101110,
-        "?": 0b0101111,
-        "-": 0b0110000,
-        "_": 0b0110001,
-        "+": 0b0110010,
-        "=": 0b0110011,
-        "`": 0b0110100,
-        "~": 0b0110101,
-        "*": 0b0110110,
-        ")": 0b0110111,
-        "]": 0b0111000,
-        "}": 0b0111001,
-        "\\": 0b0111010,
-        ":": 0b0111011,
-        ";": 0b0111100,
-        "\"": 0b0111101,
-        ">": 0b0111110,
-        "!": 0b0111111,
-        "^": 0b1000000,
-        "&": 0b1000001,
-        "%": 0b1000010,
-        "$": 0b1000011,
-        "@": 0b1000100,
-        "#": 0b1000101,
-        "|": 0b1000110,
-        "a": 0b1001010,
-        "w": 0b1001011,
-        "j": 0b1001100,
-        "e": 0b1001101,
-        "l": 0b1001110,
-        "y": 0b1001111,
-        "h": 0b1010000,
-        "o": 0b1010001,
-        "s": 0b1010010,
-        "i": 0b1010011,
-        "u": 0b1010100,
-        "m": 0b1010101,
-        "b": 0b1010110,
-        "c": 0b1010111,
-        "d": 0b1011000,
-        "f": 0b1011001,
-        "g": 0b1011010,
-        "k": 0b1011011,
-        "n": 0b1011100,
-        "p": 0b1011101,
-        "q": 0b1011110,
-        "r": 0b1011111,
-        "t": 0b1100000,
-        "v": 0b1100001,
-        "x": 0b1100010,
-        "z": 0b1100011,
-    },
-}
+import { Bubble, CharacterMapping, doubleBubble, NestedNumberArray, SimpleBubble } from "./awatypes.js";
 
 function
 convertStringToCharCodes(str: string, charMap: CharacterMapping): number[]
@@ -794,7 +450,6 @@ class BubbleAbyss
                 },
                 tmpTail: Bubble = tmpHead;
 
-            debugger;
             while(headA && headB)
             {
                 const bubble = this.recursiveMaths(headA, headB, mathOp);
@@ -915,6 +570,7 @@ export class AwaInterpreter
 
     #labelIndices = new Map<number, number>();
     #bubbleAbyss = new BubbleAbyss;
+    #charMap: CharacterMapping;
 
     get awaindex(): number { return this.#awaindex; }
     get awatokens(): readonly number[] { return this.#awatokens }
@@ -925,6 +581,7 @@ export class AwaInterpreter
     {
         this.#awaindex = 0;
         this.#executionTime = 0;
+        this.#charMap = AwaSCII;
         this.#bubbleAbyss.clear();
 
         const awabits = parseAwas(awatalk);
@@ -958,28 +615,44 @@ export class AwaInterpreter
                 break;
 
             case AWATISMS["PRN"]: {
+                if(!this.#sendOutput) break;
                 const bubbles = bubbleAbyss.pop(true);
-                if(typeof bubbles === "number") this.#sendOutput?.(AwaSCII.codeToChar[bubbles] ?? "");
-                else if(bubbles) this.#sendOutput?.(convertCharCodesToString(bubbles, AwaSCII));
-                }break;
+
+                if(typeof bubbles === "number")
+                {
+                    const char = this.#charMap.codeToChar[bubbles];
+                    if(char) this.#sendOutput(char);
+                }
+                else if(bubbles)
+                {
+                    const chars = convertCharCodesToString(bubbles, this.#charMap);
+                    this.#sendOutput(chars);
+                }}break;
 
             case AWATISMS["PR1"]: {
+                if(!this.#sendOutput) break;
+
                 const bubbles = bubbleAbyss.pop(true);
-                if(typeof bubbles === "number") this.#sendOutput?.(bubbles.toString() + " ");
-                else if(bubbles) this.#sendOutput?.(bubbles.join(" ") + " ");
+                let chars: string;
+
+                if(typeof bubbles === "number") chars = bubbles.toString();
+                else if(bubbles) chars = bubbles.join(" ");
+                else break;
+
+                this.#sendOutput(chars + " ")
                 }break;
 
-            case AWATISMS["RED"]:
-                await this.#getInput?.("STRING").then(inputStr => {
-                    bubbleAbyss.bigBlow(convertStringToCharCodes(inputStr, AwaSCII));
-                })
-                break;
+            case AWATISMS["RED"]: {
+                if(!this.#getInput) break;
+                const inputStr = await this.#getInput("STRING");
+                bubbleAbyss.bigBlow(convertStringToCharCodes(inputStr, this.#charMap));
+                }break;
 
-            case AWATISMS["R3D"]:
-                await this.#getInput?.("NUMBER").then(inputStr => {
-                    bubbleAbyss.blow(readNumberFromString(inputStr));
-                })
-                break;
+            case AWATISMS["R3D"]: {
+                if(!this.#getInput) break;
+                const inputStr = await this.#getInput("NUMBER");
+                bubbleAbyss.blow(readNumberFromString(inputStr));
+                }break;
 
             case AWATISMS["BLO"]:
                 bubbleAbyss.blow(awatokens[this.#awaindex++]);
@@ -1041,7 +714,14 @@ export class AwaInterpreter
                 if(awaToken === AWATISMS["GR8"] && bubbleAbyss.isGreaterThan()) break;
                 
                 // Skip to next next token if next token takes param
-                if(paramedAwatisms.includes(awatokens[this.#awaindex++])) this.#awaindex++;
+                if(paramedAwatisms.has(awatokens[this.#awaindex++])) this.#awaindex++;
+                break;
+
+            case AWATISMS["CWA"]:
+                this.switchCharMap(awatokens[this.#awaindex++]);
+                break;
+
+            case AWATISMS["BY8"]: // ignore; compiler-only
                 break;
 
             case AWATISMS["TRM"]:
@@ -1072,6 +752,22 @@ export class AwaInterpreter
         }
     }
 
+    private switchCharMap(key: number): void
+    {
+        switch (key) {
+            case 0:
+            default:
+                this.#charMap = AwaSCII;
+                break;
+            
+            // TODO: add common and extended awascii mappings
+            
+            case 3:
+                this.#charMap = FullerAwaSCII;
+                break;
+        }
+    }
+
     private StoreLabelIndices(): void
     {
         this.#labelIndices.clear();
@@ -1082,7 +778,7 @@ export class AwaInterpreter
         while(i < awatokens.length)
         {
             const token = awatokens[i++];
-            if(paramedAwatisms.includes(token)) i++;
+            if(paramedAwatisms.has(token)) i++;
             if(token !== AWATISMS.LBL) continue;
             const labelIndex = awatokens[i - 1];
             this.#labelIndices.set(labelIndex, i);

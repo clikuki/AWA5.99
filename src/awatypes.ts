@@ -87,3 +87,9 @@ export interface doubleBubble
 }
 
 export type NestedNumberArray = (NestedNumberArray | number)[];
+
+export interface CharacterMapping
+{
+    codeToChar: Record<number, string>,
+    charToCode: Record<string, number>,
+}
