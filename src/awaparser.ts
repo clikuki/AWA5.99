@@ -32,14 +32,11 @@ parseAwas(awatalk: string): boolean[]
             {
                 bitArray.push(true);
             }
-            else if(foundChecksumAwa)
-            {
-                inAwaSequence = true;
-                bitArray.push(false);
-            }
             else
             {
+                if(foundChecksumAwa) bitArray.push(false);
                 foundChecksumAwa = true;
+                inAwaSequence = true;
             }
         }
     }
