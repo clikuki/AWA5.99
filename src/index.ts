@@ -1,10 +1,63 @@
 import { AWATISM_CODE_COMMANDS, paramedAwatisms } from "./awaconsts.js";
 import { Awarunner } from "./awarunner.js";
 
+// sorta parses awatalk to find start and end positions for each valid awatoken
+// written to match behavior of parseAwas()
+function getAwatalkFragmentPositions(awatalk: string): [number, number][]
+{
+    const fragmentPositions: [number, number][] = [],
+          matchAgainst = "AWA";
+    
+    let token = 0,
+        remainingBits = 1,
+        matchIdx = 0,
+        inAwaSequence = false,
+        idx = 0,
+        startIdx = 0,
+        confirmedStart = false,
+        char: string;
+    
+    for(; idx < awatalk.length; idx++)
+    {
+        char = awatalk[idx].toUpperCase();
+        
+        if(char === " ")
+        {
+            matchIdx = 0;
+            inAwaSequence = false;
+            if(!confirmedStart) startIdx++;
+        }
+
+        if(char !== matchAgainst[matchIdx])
+        {
+            matchIdx = 0;
+        }
+        else if(++matchIdx > 2)
+        {
+            matchIdx = 1;
+            token = (token << 1) | (inAwaSequence ? 1 : 0);
+            inAwaSequence = true;
+            confirmedStart = true;
+
+            if(--remainingBits <= 0)
+            {
+                fragmentPositions.push([startIdx, idx + 1]);
+                startIdx = idx + 1;
+                remainingBits = paramedAwatisms.get(token) ? 8 : 5;
+                token = 0;
+                confirmedStart = false;
+            }
+        }
+    }
+
+    return fragmentPositions;
+}
+
 function main(): void
 {
     const awatalkInput = document.querySelector("#awatalk") as HTMLTextAreaElement;
     const awaOutputEl = document.querySelector("#awaout") as HTMLTextAreaElement;
+    const awatalkHighlightsEl = document.querySelector(".awatalk-highlights") as HTMLDivElement;
     const runScriptBtn = document.querySelector(".run") as HTMLButtonElement;
     const stopScriptBtn = document.querySelector(".stop") as HTMLButtonElement;
     const stepScriptBtn = document.querySelector(".step") as HTMLButtonElement;
@@ -44,6 +97,31 @@ function main(): void
     awarunner.UseOutputCallback(onOutput);
 
     let isUsingLatestAwatalk = false;
+
+    function updateAwatalkHighlights(): void
+    {
+        const awatalk = awatalkInput.value;
+        const stringFragments = getAwatalkFragmentPositions(awatalk);
+        const nodes: Node[] = [];
+
+        let prevEnd = -1;
+        for(const [start, end] of stringFragments)
+        {
+            const stringFragment = awatalk.slice(start, end);
+            if(start !== 0 && prevEnd !== start)
+            {
+                nodes.push(document.createTextNode("\u00A0"));
+            }
+
+            const fragSpan = document.createElement("span");
+            fragSpan.textContent = stringFragment;
+            nodes.push(fragSpan);
+
+            prevEnd = end;
+        }
+
+        awatalkHighlightsEl.replaceChildren(...nodes);
+    }
 
     function
     updateStats(): void
@@ -130,7 +208,7 @@ function main(): void
     // EVENT LISTENERS
     runScriptBtn.addEventListener("click", doExecute.bind(null, false));
     stepScriptBtn.addEventListener("click", doExecute.bind(null, true));
-    stopScriptBtn.addEventListener("click", () => awarunner.stop());
+    stopScriptBtn.addEventListener("click", awarunner.stop.bind(awarunner));
     resetScriptBtn.addEventListener("click", resetRunner);
     
     awarunner.watchStatsChange((changed) => {
@@ -140,10 +218,15 @@ function main(): void
     })
 
     // Invalidate stored awatalk
-    awatalkInput.addEventListener("input", () => isUsingLatestAwatalk = false);
+    awatalkInput.addEventListener("input", () =>
+    {
+        isUsingLatestAwatalk = false;
+        updateAwatalkHighlights();
+    });
 
     // Init
     clearOutput();
+    updateAwatalkHighlights();
 }
 
 main();

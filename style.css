@@ -8,6 +8,10 @@
     --jelly-main: #cde9f4;
     --jelly-secondary: #fef6b6;
     --corner-radius: 1rem;
+
+    --text-highlight-1: #c5dee8;
+    --text-highlight-2: #dde7d8;
+    --text-highlight-3: #f4efc7;
 }
 
 body
@@ -44,9 +48,16 @@ main
     }
 }
 
-.wrapper
+.input-area
 {
     position: relative;
+    display: grid;
+    grid-template-areas: "a";
+
+    > *
+    {
+        grid-area: a;
+    }
 
     > label
     {
@@ -60,9 +71,9 @@ main
         border-radius: var(--corner-radius);
     }
 
-    > textarea
+    textarea,
+    .highlights
     {
-        
         font-size: 1.3rem;
         font-family: monospace;
 
@@ -78,17 +89,30 @@ main
         border: 2px solid white;
         border-radius: var(--corner-radius);
         border-top-left-radius: 0;
-        
-        &#awatalk
-        {
-            min-height: 20rem;
-        }
 
         &:focus-visible,
-        &:focus-visible + label
+        &:focus-visible + *
         {
             outline: 2px solid var(--jelly-secondary);
         }
+    }
+
+    .highlights
+    {
+        color: transparent;
+        z-index: -1;
+
+        /* :nth-child(2n - 1) { background-color: var(--text-highlight-1); }
+        :nth-child(2n) { background-color: var(--text-highlight-2); } */
+        
+        :nth-child(3n - 2) { background-color: var(--text-highlight-1); }
+        :nth-child(3n - 1) { background-color: var(--text-highlight-2); }
+        :nth-child(3n) { background-color: var(--text-highlight-3); }
+    }
+    
+    &.highlighted textarea
+    {
+        background-color: transparent;
     }
 }
 
