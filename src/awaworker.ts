@@ -70,6 +70,9 @@ function startWorker(): void
 
     function yieldWorker(): Promise<void>
     {
+        // the only reason this is required is because the shared mem doesn't seem
+        // to be updated immediately? at least, reading after without this "yield"
+        // shows that control[0] hasn't changed, which is confusing
         return new Promise<void>(res =>
         {
             addEventListener("message", function
