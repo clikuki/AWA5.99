@@ -13,8 +13,7 @@ function getAwatalkFragmentPositions(awatalk: string): [number, number][]
         matchIdx = 0,
         inAwaSequence = false,
         idx = 0,
-        startIdx = 0,
-        confirmedStart = false,
+        startIdx = -1,
         char: string;
     
     for(; idx < awatalk.length; idx++)
@@ -25,27 +24,31 @@ function getAwatalkFragmentPositions(awatalk: string): [number, number][]
         {
             matchIdx = 0;
             inAwaSequence = false;
-            if(!confirmedStart) startIdx++;
         }
 
         if(char !== matchAgainst[matchIdx])
         {
             matchIdx = 0;
+            if(char === "A") idx--; // accounts for two a's in a row
+            if(!fragmentPositions.length) startIdx = -1;
         }
-        else if(++matchIdx > 2)
+        else
         {
-            matchIdx = 1;
-            token = (token << 1) | (inAwaSequence ? 1 : 0);
-            inAwaSequence = true;
-            confirmedStart = true;
+            if(startIdx === -1) startIdx = idx;
 
-            if(--remainingBits <= 0)
+            if(++matchIdx > 2)
             {
-                fragmentPositions.push([startIdx, idx + 1]);
-                startIdx = idx + 1;
-                remainingBits = paramedAwatisms.get(token) ? 8 : 5;
-                token = 0;
-                confirmedStart = false;
+                matchIdx = 1;
+                token = (token << 1) | (inAwaSequence ? 1 : 0);
+                inAwaSequence = true;
+
+                if(--remainingBits <= 0)
+                {
+                    fragmentPositions.push([startIdx, idx + 1]);
+                    startIdx = idx + 1;
+                    remainingBits = paramedAwatisms.get(token) ? 8 : 5;
+                    token = 0;
+                }
             }
         }
     }
@@ -101,23 +104,19 @@ function main(): void
     function updateAwatalkHighlights(): void
     {
         const awatalk = awatalkInput.value;
-        const stringFragments = getAwatalkFragmentPositions(awatalk);
-        const nodes: Node[] = [];
-
-        let prevEnd = -1;
-        for(const [start, end] of stringFragments)
+        const fragmentPositions = getAwatalkFragmentPositions(awatalk);
+        const nodes: Node[] = fragmentPositions.map(([start, end]) =>
         {
             const stringFragment = awatalk.slice(start, end);
-            if(start !== 0 && prevEnd !== start)
-            {
-                nodes.push(document.createTextNode("\u00A0"));
-            }
-
             const fragSpan = document.createElement("span");
             fragSpan.textContent = stringFragment;
-            nodes.push(fragSpan);
+            return fragSpan;
+        });
 
-            prevEnd = end;
+        const spacerCnt = fragmentPositions[0][0];
+        for(let i = 0; i < spacerCnt; i++)
+        {
+            nodes.unshift(document.createTextNode("\u00A0"))
         }
 
         awatalkHighlightsEl.replaceChildren(...nodes);

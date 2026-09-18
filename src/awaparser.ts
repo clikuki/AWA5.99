@@ -23,6 +23,7 @@ parseAwas(awatalk: string): boolean[]
         if(char !== matchAgainst[matchIdx])
         {
             matchIdx = 0;
+            if(char === "A") i--; // accounts for two a's in a row
         }
         else if(++matchIdx > 2)
         {
