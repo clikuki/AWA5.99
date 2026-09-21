@@ -1,4 +1,4 @@
-import { AwaInterpreter } from "./awaxecute.js";
+import { AwaInterpreter } from "../core/awaxecute.js";
 import type { AwaControlsSharing, AwaInputRequest,
               AwaInputResponse,
               AwaOutputResponse,
@@ -8,7 +8,7 @@ import type { AwaControlsSharing, AwaInputRequest,
               AwaStatsRefresh,
               AwaStepRequest,
               AwatalkSetRequest, 
-              AwaYieldMoment} from "./awatypes.js"; 
+              AwaYieldMoment} from "../core/awatypes.js"; 
 
 type awaInbounds =
     | AwaInputResponse

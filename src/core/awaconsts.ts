@@ -1,4 +1,4 @@
-import { CharacterMapping } from "./awatypes";
+import { CharacterMapping } from "./awatypes.js";
 
 export const enum AWATISMS {
     "NOP" = 0b00000,

@@ -1,4 +1,4 @@
-import { AWATISM_CODE_COMMANDS, paramedAwatisms } from "./awaconsts.js";
+import { AWATISM_CODE_COMMANDS, paramedAwatisms } from "../core/awaconsts.js";
 import { Awarunner } from "./awarunner.js";
 
 // sorta parses awatalk to find start and end positions for each valid awatoken

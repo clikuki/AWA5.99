@@ -1,4 +1,4 @@
-import type { InputCallback, OutputCallback } from "./awaxecute.js";
+import type { InputCallback, OutputCallback } from "../core/awaxecute.js";
 import type { AwaInputRequest,
               AwaInputResponse,
               AwaOutputResponse,
@@ -12,7 +12,7 @@ import type { AwaInputRequest,
               AwaRunHaltingRequest, 
               AwaRunHaltingResponse,
               AwaControlsSharing,
-              AwaYieldMoment} from "./awatypes.js";
+              AwaYieldMoment} from "../core/awatypes.js";
 
 type awaOutbounds =
     | AwaStatsRefresh
@@ -44,7 +44,7 @@ export class Awarunner
 
     constructor()
     {
-        this.#worker = new Worker("build/awaworker.js", { type: "module" });
+        this.#worker = new Worker("build/website/awaworker.js", { type: "module" });
 
         if(crossOriginIsolated)
         {
