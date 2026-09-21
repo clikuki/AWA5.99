@@ -3,9 +3,9 @@ import { Awarunner } from "./awarunner.js";
 
 // sorta parses awatalk to find start and end positions for each valid awatoken
 // written to match behavior of parseAwas()
-function getAwatalkFragmentPositions(awatalk: string): [number, number][]
+function getAwatalkFragments(awatalk: string): [number, number, string][]
 {
-    const fragmentPositions: [number, number][] = [],
+    const fragmentPositions: [number, number, string][] = [],
           matchAgainst = "AWA";
     
     let token = 0,
@@ -14,7 +14,9 @@ function getAwatalkFragmentPositions(awatalk: string): [number, number][]
         inAwaSequence = false,
         idx = 0,
         startIdx = -1,
-        char: string;
+        char: string,
+        isParam = false,
+        tokenString: string = "CHECKSUM";
     
     for(; idx < awatalk.length; idx++)
     {
@@ -44,9 +46,24 @@ function getAwatalkFragmentPositions(awatalk: string): [number, number][]
 
                 if(--remainingBits <= 0)
                 {
-                    fragmentPositions.push([startIdx, idx + 1]);
+                    remainingBits = 5;
+
+                    if(fragmentPositions.length)
+                    {
+                        if(isParam) tokenString = String(token);
+                        else {
+                            tokenString = AWATISM_CODE_COMMANDS[token];
+                            
+                            if(paramedAwatisms.get(token))
+                            {
+                                remainingBits = 8;
+                                isParam = true;
+                            }
+                        }
+                    }
+
+                    fragmentPositions.push([startIdx, idx + 1, tokenString]);
                     startIdx = idx + 1;
-                    remainingBits = paramedAwatisms.get(token) ? 8 : 5;
                     token = 0;
                 }
             }
@@ -99,28 +116,8 @@ function main(): void
     awarunner.UseInputCallback(onInput);
     awarunner.UseOutputCallback(onOutput);
 
-    let isUsingLatestAwatalk = false;
-
-    function updateAwatalkHighlights(): void
-    {
-        const awatalk = awatalkInput.value;
-        const fragmentPositions = getAwatalkFragmentPositions(awatalk);
-        const nodes: Node[] = fragmentPositions.map(([start, end]) =>
-        {
-            const stringFragment = awatalk.slice(start, end);
-            const fragSpan = document.createElement("span");
-            fragSpan.textContent = stringFragment;
-            return fragSpan;
-        });
-
-        const spacerCnt = fragmentPositions[0][0];
-        for(let i = 0; i < spacerCnt; i++)
-        {
-            nodes.unshift(document.createTextNode("\u00A0"))
-        }
-
-        awatalkHighlightsEl.replaceChildren(...nodes);
-    }
+    let isUsingLatestAwatalk = false,
+        fragmentPositions: ReturnType<typeof getAwatalkFragments>;
 
     function
     updateStats(): void
@@ -180,6 +177,33 @@ function main(): void
         }
 
         container.replaceChildren(...elements);
+    }
+
+    function updateAwatalkHighlights(): void
+    {
+        const awatalk = awatalkInput.value;
+        const nodes: Node[] = [];
+        fragmentPositions = getAwatalkFragments(awatalk);
+
+        if(awatalk && fragmentPositions.length)
+            for(const [start, end] of fragmentPositions)
+            {
+                const stringFragment = awatalk.slice(start, end);
+                const fragSpan = document.createElement("span");
+                fragSpan.textContent = stringFragment;
+                nodes.push(fragSpan);
+            }
+
+        if(fragmentPositions[0]?.[0])
+        {
+            const spacerCnt = fragmentPositions[0][0];
+            for(let i = 0; i < spacerCnt; i++)
+            {
+                nodes.unshift(document.createTextNode("\u00A0"))
+            }
+        }
+
+        awatalkHighlightsEl.replaceChildren(...nodes);
     }
 
     async function resetRunner(): Promise<void>
