@@ -1,4 +1,4 @@
-import { AwaSCII, AWATISMS, FullerAwaSCII, paramedAwatisms } from "./awaconsts.js";
+import { AwaSCII, AWATISMS, CommonAwaSCII, ExtendedCommonAwaSCII, FullerAwaSCII, paramedAwatisms } from "./awaconsts.js";
 import { parseAwas } from "./awaparser.js";
 import { tokenizeAwas } from "./awatokener.js";
 import { Bubble, CharacterMapping, doubleBubble, NestedNumberArray, SimpleBubble } from "./awatypes.js";
@@ -756,11 +756,16 @@ export class AwaInterpreter
     {
         switch (key) {
             case 0:
-            default:
                 this.#charMap = AwaSCII;
                 break;
             
-            // TODO: add common and extended awascii mappings
+            case 1:
+                this.#charMap = CommonAwaSCII;
+                break;
+            
+            case 2:
+                this.#charMap = ExtendedCommonAwaSCII;
+                break;
             
             case 3:
                 this.#charMap = FullerAwaSCII;
