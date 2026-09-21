@@ -1,24 +1,88 @@
 import { AwaInterpreter } from "../core/awaxecute.js";
-import type { AwaControlsSharing, AwaInputRequest,
-              AwaInputResponse,
-              AwaOutputResponse,
-              AwaRunHaltingRequest,
-              AwaRunHaltingResponse,
-              AwaRunRequest,
-              AwaStatsRefresh,
-              AwaStepRequest,
-              AwatalkSetRequest, 
-              AwaYieldMoment} from "../core/awatypes.js"; 
+import type { NestedNumberArray } from "../core/awatypes.js";
 
-type awaInbounds =
-    | AwaInputResponse
-    | AwatalkSetRequest
-    | AwaRunRequest
-    | AwaStepRequest
-    | AwaRunHaltingResponse
-    | AwaControlsSharing;
+export interface MessageShareControlsSignal
+{
+    msgType: "SHARE_CONTROL";
+    sharedBuffer: SharedArrayBuffer;
+}
 
-function startWorker(): void
+export interface MessageYieldSignal
+{
+    msgType: "YIELD";
+}
+
+export interface MessageRefreshStatsSignal
+{
+    msgType: "STATS_RESPONSE";
+    awaindex?: number;
+    executionTime?: number;
+    awatokens?: readonly number[];
+    bubbles?: NestedNumberArray;
+    hasFinished?: boolean;
+}
+export interface MessageStepSignal
+{
+    msgType: "STEP";
+}
+
+export interface MessageAwatalkUpdate
+{
+    msgType: "SET_AWATALK";
+    awatalk: string;
+}
+
+export interface MessageInputRequest
+{
+    msgType: "INPUT_REQUEST";
+    inputType: "STRING" | "NUMBER";
+}
+export interface MessageInputResponse
+{
+    msgType: "INPUT_RESPONSE";
+    inStr: string;
+}
+
+export interface MessageOutputRequest
+{
+    msgType: "RUN";
+}
+export interface MessageOutputResponse
+{
+    msgType: "OUTPUT";
+    outStr: string;
+}
+
+export interface MessageHaltRequest
+{
+    msgType: "HALT_RUN_REQUEST";
+}
+export interface MessageHaltResponse
+{
+    msgType: "HALT_RUN_RESPONSE";
+    haltRun: boolean;
+}
+
+export interface ChangedProperties
+{
+    awaindex: boolean;
+    executionTime: boolean;
+    awatokens: boolean;
+    bubbles: boolean;
+    hasFinished: boolean;
+}
+export type StatsWatchCallback = (changed: ChangedProperties) => void
+
+type recievedMessagesTypes =
+    | MessageInputResponse
+    | MessageAwatalkUpdate
+    | MessageOutputRequest
+    | MessageStepSignal
+    | MessageHaltResponse
+    | MessageShareControlsSignal;
+
+function
+startWorker(): void
 {
     const awaInterpreter = new AwaInterpreter;
     let sendInputCallback: ((inStr: string) => void) | null = null;
@@ -27,7 +91,8 @@ function startWorker(): void
     // currently only handles stop signal at idx #0
     let controls: Uint8Array<SharedArrayBuffer> | null = null;
 
-    function sendResetStats(): void
+    function
+    sendResetStats(): void
     {
         postMessage({
             msgType: "STATS_RESPONSE",
@@ -36,10 +101,11 @@ function startWorker(): void
             awatokens: awaInterpreter.awatokens,
             bubbles: [],
             hasFinished: awaInterpreter.hasFinished,
-        } satisfies AwaStatsRefresh)
+        } satisfies MessageRefreshStatsSignal)
     }
 
-    function sendExecutionStats(): void
+    function
+    sendExecutionStats(): void
     {
         postMessage({
             msgType: "STATS_RESPONSE",
@@ -47,10 +113,11 @@ function startWorker(): void
             executionTime: awaInterpreter.executionTime,
             bubbles: awaInterpreter.getBubblesList(),
             hasFinished: awaInterpreter.hasFinished,
-        } satisfies AwaStatsRefresh);
+        } satisfies MessageRefreshStatsSignal);
     }
 
-    function checkForHalt(): Promise<boolean>
+    function
+    checkForHalt(): Promise<boolean>
     {
         return new Promise(res =>
         {
@@ -62,13 +129,14 @@ function startWorker(): void
             }
             else
             {
-                postMessage({ msgType: "HALT_RUN_REQUEST" } satisfies AwaRunHaltingRequest);
+                postMessage({ msgType: "HALT_RUN_REQUEST" } satisfies MessageHaltRequest);
                 stopExecutionCallback = res;
             }
         });
     }
 
-    function yieldWorker(): Promise<void>
+    function
+    yieldWorker(): Promise<void>
     {
         // the only reason this is required is because the shared mem doesn't seem
         // to be updated immediately? at least, reading after without this "yield"
@@ -76,18 +144,18 @@ function startWorker(): void
         return new Promise<void>(res =>
         {
             addEventListener("message", function
-                finishYielding(ev: MessageEvent<AwaYieldMoment>): void
+                finishYielding(ev: MessageEvent<MessageYieldSignal>): void
                 {
                     if(ev.data.msgType !== "YIELD") return;
                     removeEventListener("message", finishYielding);
                     res();
                 }
             );
-            postMessage({ msgType: "YIELD" } satisfies AwaYieldMoment);
+            postMessage({ msgType: "YIELD" } satisfies MessageYieldSignal);
         })
     }
 
-    addEventListener("message", async (ev: MessageEvent<awaInbounds>) =>
+    addEventListener("message", async (ev: MessageEvent<recievedMessagesTypes>) =>
     {
         const data = ev.data;
         switch (data.msgType) {
@@ -127,13 +195,13 @@ function startWorker(): void
         return new Promise<string>(res =>
         {
             sendInputCallback = res;
-            postMessage({ msgType: "INPUT_REQUEST", inputType } satisfies AwaInputRequest);
+            postMessage({ msgType: "INPUT_REQUEST", inputType } satisfies MessageInputRequest);
         })
     });
 
     awaInterpreter.UseOutputCallback((outStr) =>
     {
-        postMessage({ msgType: "OUTPUT", outStr } satisfies AwaOutputResponse);
+        postMessage({ msgType: "OUTPUT", outStr } satisfies MessageOutputResponse);
     });
 }
 

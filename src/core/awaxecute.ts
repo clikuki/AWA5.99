@@ -1,7 +1,18 @@
-import { AwaSCII, AWATISMS, CommonAwaSCII, ExtendedCommonAwaSCII, FullerAwaSCII, paramedAwatisms } from "./awaconsts.js";
 import { parseAwas } from "./awaparser.js";
 import { tokenizeAwas } from "./awatokener.js";
-import { Bubble, CharacterMapping, doubleBubble, NestedNumberArray, SimpleBubble } from "./awatypes.js";
+import { AwaSCII,
+         AWATISMS,
+         CommonAwaSCII,
+         ExtendedCommonAwaSCII,
+         FullerAwaSCII,
+         paramedAwatisms } from "./awaconsts.js";
+import { Bubble,
+         SimpleBubble,
+         DoubleBubble,
+         NestedNumberArray,
+         CharacterMapping,
+         InterpreterInputCallback,
+         InterpreterOutputCallback } from "./awatypes.js";
 
 function
 convertStringToCharCodes(str: string, charMap: CharacterMapping): number[]
@@ -302,7 +313,7 @@ class BubbleAbyss
         let front = this.top, back = this.top.prev;
         
         // Create and link double bubble
-        const bubble: doubleBubble =
+        const bubble: DoubleBubble =
             {
                 type: "DOUBLE",
                 contents: null,
@@ -474,7 +485,7 @@ class BubbleAbyss
             const smpl = a.type === "SIMPLE" ? a : b,
                 dbl = a.type === "DOUBLE" ? a : b;
 
-            let head = (dbl as doubleBubble).contents,
+            let head = (dbl as DoubleBubble).contents,
                 tmpHead: Bubble = {
                     type: "SIMPLE",
                     value: 0,
@@ -557,16 +568,14 @@ class BubbleAbyss
     }
 }
 
-export type InputCallback = (type: "STRING" | "NUMBER") => Promise<string>;
-export type OutputCallback = (awaOutput: string) => void;
 export class AwaInterpreter
 {
     #awatokens: number[] = [];
     #awaindex = 0;
     #executionTime = 0;
 
-    #getInput: InputCallback | null = null;
-    #sendOutput: OutputCallback | null = null;
+    #getInput: InterpreterInputCallback | null = null;
+    #sendOutput: InterpreterOutputCallback | null = null;
 
     #labelIndices = new Map<number, number>();
     #bubbleAbyss = new BubbleAbyss;
@@ -589,12 +598,12 @@ export class AwaInterpreter
         this.StoreLabelIndices()
     }
 
-    public UseInputCallback(cb: InputCallback): void
+    public UseInputCallback(cb: InterpreterInputCallback): void
     {
         this.#getInput = cb;
     }
 
-    public UseOutputCallback(cb: OutputCallback): void
+    public UseOutputCallback(cb: InterpreterOutputCallback): void
     {
         this.#sendOutput = cb;
     }

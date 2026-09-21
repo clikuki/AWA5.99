@@ -1,25 +1,26 @@
-import type { InputCallback, OutputCallback } from "../core/awaxecute.js";
-import type { AwaInputRequest,
-              AwaInputResponse,
-              AwaOutputResponse,
-              AwaRunRequest,
-              AwaStatsRefresh,
-              AwaStepRequest,
-              AwatalkSetRequest,
-              StatsWatchChanges,
-              NestedNumberArray, 
+import type { InterpreterInputCallback,
+              InterpreterOutputCallback,
+              NestedNumberArray } from "../core/awatypes.js";
+import type { MessageInputRequest,
+              MessageInputResponse,
+              MessageOutputResponse,
+              MessageOutputRequest,
+              MessageRefreshStatsSignal,
+              MessageStepSignal,
+              MessageAwatalkUpdate,
+              ChangedProperties,
               StatsWatchCallback, 
-              AwaRunHaltingRequest, 
-              AwaRunHaltingResponse,
-              AwaControlsSharing,
-              AwaYieldMoment} from "../core/awatypes.js";
+              MessageHaltRequest, 
+              MessageHaltResponse,
+              MessageShareControlsSignal,
+              MessageYieldSignal} from "./engineWorker.js";
 
-type awaOutbounds =
-    | AwaStatsRefresh
-    | AwaInputRequest
-    | AwaOutputResponse
-    | AwaRunHaltingRequest
-    | AwaYieldMoment;
+type recievedMessagesTypes =
+    | MessageRefreshStatsSignal
+    | MessageInputRequest
+    | MessageOutputResponse
+    | MessageHaltRequest
+    | MessageYieldSignal;
 
 type WaitHaltCallback = () => void;
 
@@ -37,14 +38,14 @@ export class Awarunner
 
     #controls: Uint8Array<SharedArrayBuffer> | null = null;
     
-    #getInput: InputCallback | null = null;
-    #sendOutput: OutputCallback | null = null;
+    #getInput: InterpreterInputCallback | null = null;
+    #sendOutput: InterpreterOutputCallback | null = null;
     #watchStats: StatsWatchCallback | null = null;
     #waitHalt: WaitHaltCallback | null = null;
 
     constructor()
     {
-        this.#worker = new Worker("build/website/awaworker.js", { type: "module" });
+        this.#worker = new Worker("build/website/engineWorker.js", { type: "module" });
 
         if(crossOriginIsolated)
         {
@@ -53,16 +54,16 @@ export class Awarunner
             this.#worker.postMessage({
                 msgType: "SHARE_CONTROL",
                 sharedBuffer
-            } satisfies AwaControlsSharing);
+            } satisfies MessageShareControlsSignal);
             console.log("Main: Sent controls to worker")
         }
 
-        this.#worker.addEventListener("message", (ev: MessageEvent<awaOutbounds>) =>
+        this.#worker.addEventListener("message", (ev: MessageEvent<recievedMessagesTypes>) =>
         {
             const data = ev.data;
             switch (data.msgType) {
                 case "STATS_RESPONSE": {
-                    const changed: StatsWatchChanges = {
+                    const changed: ChangedProperties = {
                         awaindex: data.awaindex !== undefined,
                         executionTime: data.executionTime !== undefined,
                         awatokens: data.awatokens !== undefined,
@@ -85,7 +86,7 @@ export class Awarunner
                     if(!this.#getInput) break;
                     this.#getInput(data.inputType)
                         .then(inStr => this.#worker.postMessage(
-                            {msgType: "INPUT_RESPONSE", inStr } satisfies AwaInputResponse
+                            {msgType: "INPUT_RESPONSE", inStr } satisfies MessageInputResponse
                         ))
                     break;
 
@@ -93,7 +94,7 @@ export class Awarunner
                     this.#worker.postMessage({
                         msgType: "HALT_RUN_RESPONSE",
                         haltRun: this.#haltRunAtNextOpportunity
-                    } satisfies AwaRunHaltingResponse);
+                    } satisfies MessageHaltResponse);
                     if(this.#haltRunAtNextOpportunity)
                     {
                         this.#isRunning = false;
@@ -109,7 +110,7 @@ export class Awarunner
                     break;
                 
                 case "YIELD":
-                    this.#worker.postMessage({ msgType: "YIELD" } satisfies AwaYieldMoment);
+                    this.#worker.postMessage({ msgType: "YIELD" } satisfies MessageYieldSignal);
                     break;
             }
         })
@@ -143,12 +144,12 @@ export class Awarunner
         this.#watchStats = cb;
     }
 
-    public UseInputCallback(cb: InputCallback): void
+    public UseInputCallback(cb: InterpreterInputCallback): void
     {
         this.#getInput = cb;
     }
 
-    public UseOutputCallback(cb: OutputCallback): void
+    public UseOutputCallback(cb: InterpreterOutputCallback): void
     {
         this.#sendOutput = cb;
     }
@@ -156,20 +157,20 @@ export class Awarunner
     public UseAwatalk(awatalk: string): void
     {
         if(this.#isRunning) return;
-        this.#worker.postMessage({ msgType: "SET_AWATALK", awatalk } satisfies AwatalkSetRequest);
+        this.#worker.postMessage({ msgType: "SET_AWATALK", awatalk } satisfies MessageAwatalkUpdate);
     }
 
     public run(): void
     {
         if(this.#isRunning) return;
         this.#isRunning = true;
-        this.#worker.postMessage({ msgType: "RUN" } satisfies AwaRunRequest);
+        this.#worker.postMessage({ msgType: "RUN" } satisfies MessageOutputRequest);
     }
 
     public step(): void
     {
         if(this.#isRunning) return;
-        this.#worker.postMessage({ msgType: "STEP" } satisfies AwaStepRequest);
+        this.#worker.postMessage({ msgType: "STEP" } satisfies MessageStepSignal);
     }
 
     public stop(): Promise<void>

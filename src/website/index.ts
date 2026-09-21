@@ -1,9 +1,10 @@
 import { AWATISM_CODE_COMMANDS, paramedAwatisms } from "../core/awaconsts.js";
-import { Awarunner } from "./awarunner.js";
+import { Awarunner } from "./runner.js";
 
 // sorta parses awatalk to find start and end positions for each valid awatoken
 // written to match behavior of parseAwas()
-function getAwatalkFragments(awatalk: string): [number, number, string][]
+function
+getAwatalkFragments(awatalk: string): [number, number, string][]
 {
     const fragmentPositions: [number, number, string][] = [],
           matchAgainst = "AWA";
@@ -73,7 +74,8 @@ function getAwatalkFragments(awatalk: string): [number, number, string][]
     return fragmentPositions;
 }
 
-function main(): void
+function
+main(): void
 {
     const awatalkInput = document.querySelector("#awatalk") as HTMLTextAreaElement;
     const awaOutputEl = document.querySelector("#awaout") as HTMLTextAreaElement;
@@ -179,7 +181,8 @@ function main(): void
         container.replaceChildren(...elements);
     }
 
-    function updateAwatalkHighlights(): void
+    function
+    updateAwatalkHighlights(): void
     {
         const awatalk = awatalkInput.value;
         const nodes: Node[] = [];
@@ -206,7 +209,8 @@ function main(): void
         awatalkHighlightsEl.replaceChildren(...nodes);
     }
 
-    async function resetRunner(): Promise<void>
+    async function
+    resetRunner(): Promise<void>
     {
         await awarunner.stop();
 
@@ -215,7 +219,8 @@ function main(): void
         isUsingLatestAwatalk = true;
     }
 
-    async function doExecute(isStep: boolean)
+    async function
+    doExecute(isStep: boolean)
     {
         const performReset = !isUsingLatestAwatalk || awarunner.hasFinished;
 
