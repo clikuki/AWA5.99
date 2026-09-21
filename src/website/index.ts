@@ -51,10 +51,13 @@ getAwatalkFragments(awatalk: string): [number, number, string][]
 
                     if(fragmentPositions.length)
                     {
-                        if(isParam) tokenString = String(token);
+                        if(isParam) {
+                            tokenString = String(token);
+                            isParam = false;
+                        }
                         else {
                             tokenString = AWATISM_CODE_COMMANDS[token];
-                            
+
                             if(paramedAwatisms.get(token))
                             {
                                 remainingBits = 8;
