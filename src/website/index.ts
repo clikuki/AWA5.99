@@ -29,13 +29,7 @@ getAwatalkFragments(awatalk: string): [number, number, string][]
             inAwaSequence = false;
         }
 
-        if(char !== matchAgainst[matchIdx])
-        {
-            matchIdx = 0;
-            if(char === "A") idx--; // accounts for two a's in a row
-            if(!fragmentPositions.length) startIdx = -1;
-        }
-        else
+        if(char === matchAgainst[matchIdx])
         {
             if(startIdx === -1) startIdx = idx;
 

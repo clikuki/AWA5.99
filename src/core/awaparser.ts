@@ -20,12 +20,7 @@ parseAwas(awatalk: string): boolean[]
             inAwaSequence = false;
         }
 
-        if(char !== matchAgainst[matchIdx])
-        {
-            matchIdx = 0;
-            if(char === "A") i--; // accounts for two a's in a row
-        }
-        else if(++matchIdx > 2)
+        if(char === matchAgainst[matchIdx] && ++matchIdx > 2)
         {
             matchIdx = 1;
 
