@@ -81,6 +81,7 @@ main(): void
     const stopScriptBtn = document.querySelector(".stop") as HTMLButtonElement;
     const stepScriptBtn = document.querySelector(".step") as HTMLButtonElement;
     const resetScriptBtn = document.querySelector(".reset") as HTMLButtonElement;
+    const fragTokenEl = document.querySelector(".fragToken") as HTMLSpanElement;
     const awaindexEl = document.querySelector(".awaindex") as HTMLSpanElement;
     const executionTimeEl = document.querySelector(".executionTime") as HTMLSpanElement;
     const commandsListEl = document.querySelector(".commands") as HTMLOListElement;
@@ -116,7 +117,7 @@ main(): void
     awarunner.UseOutputCallback(onOutput);
 
     let isUsingLatestAwatalk = false,
-        fragmentPositions: ReturnType<typeof getAwatalkFragments>;
+        awatalkFragments: ReturnType<typeof getAwatalkFragments>;
 
     function
     updateStats(): void
@@ -182,11 +183,11 @@ main(): void
     updateAwatalkHighlights(): void
     {
         const awatalk = awatalkInput.value;
-        const nodes: Node[] = [];
-        fragmentPositions = getAwatalkFragments(awatalk);
+        awatalkFragments = getAwatalkFragments(awatalk);
 
-        if(awatalk && fragmentPositions.length)
-            for(const [start, end] of fragmentPositions)
+        const nodes: Node[] = [];
+        if(awatalk && awatalkFragments.length)
+            for(const [start, end] of awatalkFragments)
             {
                 const stringFragment = awatalk.slice(start, end);
                 const fragSpan = document.createElement("span");
@@ -194,9 +195,9 @@ main(): void
                 nodes.push(fragSpan);
             }
 
-        if(fragmentPositions[0]?.[0])
+        if(awatalkFragments[0]?.[0])
         {
-            const spacerCnt = fragmentPositions[0][0];
+            const spacerCnt = awatalkFragments[0][0];
             for(let i = 0; i < spacerCnt; i++)
             {
                 nodes.unshift(document.createTextNode("\u00A0"))
@@ -204,6 +205,32 @@ main(): void
         }
 
         awatalkHighlightsEl.replaceChildren(...nodes);
+    }
+
+    let _lastFragIdx = -1;
+    function
+    labelFragmentToken()
+    {
+        if(!awatalkFragments.length) return;
+        let idx = awatalkInput.selectionStart;
+        if(idx === _lastFragIdx) return; // prevents rerunning same labeling code
+
+        fragTokenEl.textContent = "N/A";
+
+        const spaceAtStart = awatalkFragments[0][0];
+        if(idx < spaceAtStart) return;
+        let target = idx - spaceAtStart;
+        
+        for(let i = 0; i < awatalkFragments.length; i++)
+        {
+            const [start, end, token] = awatalkFragments[i]
+            if((target -= end - start) < 0)
+            {
+                fragTokenEl.textContent = token;
+                _lastFragIdx = idx;
+                break;
+            }
+        }
     }
 
     async function
@@ -235,12 +262,6 @@ main(): void
     stepScriptBtn.addEventListener("click", doExecute.bind(null, true));
     stopScriptBtn.addEventListener("click", awarunner.stop.bind(awarunner));
     resetScriptBtn.addEventListener("click", resetRunner);
-    
-    awarunner.watchStatsChange((changed) => {
-        if(changed.awaindex || changed.executionTime) updateStats();
-        if(changed.awatokens) updateCommandsList();
-        if(changed.bubbles) updateBubbleAbyssDisplay();
-    })
 
     // Invalidate stored awatalk
     awatalkInput.addEventListener("input", () =>
@@ -248,6 +269,21 @@ main(): void
         isUsingLatestAwatalk = false;
         updateAwatalkHighlights();
     });
+
+    awatalkInput.addEventListener("click", labelFragmentToken);
+    awatalkInput.addEventListener("keydown", labelFragmentToken);
+    awatalkInput.addEventListener("keyup", labelFragmentToken);
+    awatalkInput.addEventListener("blur", () =>
+    {
+        fragTokenEl.textContent = "N/A";
+        _lastFragIdx = -1;
+    });
+    
+    awarunner.watchStatsChange((changed) => {
+        if(changed.awaindex || changed.executionTime) updateStats();
+        if(changed.awatokens) updateCommandsList();
+        if(changed.bubbles) updateBubbleAbyssDisplay();
+    })
 
     // Init
     clearOutput();
