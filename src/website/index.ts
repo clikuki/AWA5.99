@@ -214,11 +214,19 @@ main(): void
         if(!awatalkFragments.length) return;
         let idx = awatalkInput.selectionStart;
         if(idx === _lastFragIdx) return; // prevents rerunning same labeling code
+        _lastFragIdx = idx;
 
         fragTokenEl.textContent = "N/A";
 
+        if(idx >= awatalkInput.value.length)
+        {
+            fragTokenEl.textContent = awatalkFragments[awatalkFragments.length - 1][2];    
+            return;
+        }
+
         const spaceAtStart = awatalkFragments[0][0];
         if(idx < spaceAtStart) return;
+
         let target = idx - spaceAtStart;
         
         for(let i = 0; i < awatalkFragments.length; i++)
@@ -227,7 +235,6 @@ main(): void
             if((target -= end - start) < 0)
             {
                 fragTokenEl.textContent = token;
-                _lastFragIdx = idx;
                 break;
             }
         }
